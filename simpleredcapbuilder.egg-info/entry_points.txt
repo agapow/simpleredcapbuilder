@@ -1,0 +1,3 @@
+[console_scripts]
+expand-redcap-schema = simpleredcapbuilder.scripts.expand:main
+

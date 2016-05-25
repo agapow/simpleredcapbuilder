@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: simpleredcapbuilder
+Version: 0.1.post1
+Summary: A simple and compact way to express redcap databases
+Home-page: http://www.agapow.net/software/simpleredcapbuilder
+Author: Paul Agapow
+Author-email: paul@agapow.net
+License: MIT
+Description:    Sometimes it can be painful to express complex REDCap databases, especially those with lots of repeating items. This package offers a way to write a REDCap data dictionary in a more compact form, allowing for repeats, optional includes and text substition.
+Keywords: database text-processing
+Platform: UNKNOWN
