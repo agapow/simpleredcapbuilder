@@ -19,6 +19,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+from builtins import range
+from builtins import int
 from builtins import open
 from future import standard_library
 standard_library.install_aliases()
@@ -69,59 +71,80 @@ class ExpDataDictReader (object):
 		"""
 		Parse out the additional fields in each record.
 		"""
-		rec['tags'] = self.parse_tags_str (rec.get ('tags', ''))
-		rec['repeat'] = self.parse_repeat_str (rec.get ('repeat', ''))
-		return rec
+		try:
+			rec['tags'] = self.parse_tags_str (rec.get ('tags', ''))
+			rec['repeat'] = self.parse_repeat_str (rec.get ('repeat', ''))
+			return rec
+		except:
+			print ("Rec %s has problems with its repeat or tag fields" % rec[Column.variable.value])
+			raise
 
-	def parse_metadata_qual (self, s):
+	def parse_metadata_qual (self, md_str):
 		"""
 		Extract the form / section / item qualifier off record str
 		"""
-		# XXX: need to adapt this so we can have multiple qualified lists
-		if ':' in s:
-			qual, val = [x.strip() for x in s.split(':', 1)]
-			assert qual in ('form', 'section', 'item'), "unrecognised qualifier '%s'" % qual
-			return qual, val
+		if ';' in md_str:
+			# multiple metadata statements
+			md_statements = [x.strip() for x in md_str.split(';')]
 		else:
-			return 'item', s.strip()
+			# single statement
+			md_statements = [md_str.strip()]
+
+		# now parse statements
+		md_dict = {}
+		for md_st in md_statements:
+			if ':' in md_st:
+				qual, val = [x.strip() for x in md_st.split(':', 1)]
+				assert qual in ('form', 'section', 'item'), \
+					"unrecognised qualifier '%s'" % qual
+			else:
+				qual = 'item'
+				val = md_st.strip()
+			assert not qual in md_dict, \
+				"multiple statements for '%s' in '%s'" % (qual, md_st)
+			md_dict[qual] = val
 
 	def parse_tags_str (self, s):
 		"""
 		Parse out the 'tags' field in each record.
 		"""
-		null_dict = {'form': [], 'section': [], 'item': []}
 		if not s:
-			return null_dict
+			return {'form': [], 'section': [], 'item': []}
 		else:
-			qual, tag_str = self.parse_metadata_qual (s)
-			tag_dict = {x.trim():True for x in tag_str.split(',')}
-			null_dict[qual] = tag_dict
-			return null_dict
+			md_dict = self.parse_metadata_qual (s)
+			for k, v in list (md_dict.items()):
+				md_dict[k] = {x.trim():True for x in v.split(',')}
+			return md_dict
 
 	def parse_repeat_str (self, s):
 		"""
 		Parse out the 'repeat' field in each record.
 		"""
-		null_dict = {'form': [], 'section': [], 'item': []}
 		if not s:
-			return null_dict
+			return {'form': [], 'section': [], 'item': []}
 		else:
-			qual, rpt_str = self.parse_metadata_qual (s)
-			if ',' in rpt_str:
-				# must be a explicit sequence
-				# hideous but I eval the string to get a list
-				try:
-					rpt_list = leval ("[%s]" % rpt_str)
-				except Error as err:
-					print ("eval string")
-					print (rpt_str)
-					raise
-			else:
-				assert '-' in rpt_str, "can't interpret '%s' as range" % rpt_str
-				start, stop = [int (x) for x in rpt_str.split ('-', 1)]
-				rpt_list = list (range (start, stop+1))
-			null_dict[qual] = rpt_list
-			return null_dict
+			md_dict = self.parse_metadata_qual (s)
+			for k, v in list (md_dict.items()):
+
+				if ',' in v:
+					# must be a explicit sequence
+					# hideous but I eval the string to get a list
+					try:
+						rpt_list = leval ("[%s]" % rpt_str)
+					except Error as err:
+						print ("eval string")
+						print (rpt_str)
+						raise
+				else:
+					assert '-' in rpt_str, "can't interpret '%s' as range" % rpt_str
+					start, stop = [int (x) for x in rpt_str.split ('-', 1)]
+					rpt_list = list (range (start, stop+1))
+
+				md_dict[k] = rpt_list
+
+			return md_dict
+
+
 
 	def parse_all_recs (self, recs):
 		"""
@@ -188,65 +211,8 @@ class ExpDataDictReader (object):
 		rec['type'] = 'item'
 		rec['repeat'] = rec['repeat']['item']
 		rec['tags'] = rec['tags']['item']
-		self.validate_rec (rec)
+		pre_validate (rec)
 		return rec
-
-
-
-	def validate_rec (self, rec):
-		rec_id = rec[Column.variable.value]
-
-		def invalid_msg (msg):
-			print ("Record %s is possibly invalid: %s" % (rec_id, msg))
-
-		if rec[Column.field_type.value] in ('radio', 'checkbox', 'dropdown'):
-			if not rec[Column.choices_calculations.value].strip():
-				invalid_msg ("radio or checkbox has no choices")
-			if rec[Column.text_validation_type.value].strip():
-				invalid_msg ("radio or checkbox has text validation")
-			if rec[Column.text_validation_min.value].strip():
-				invalid_msg ("radio or checkbox has text min")
-			if rec[Column.text_validation_max.value].strip():
-				invalid_msg ("radio or checkbox has text max")
-
-		if rec[Column.field_type.value] not in ('radio', 'checkbox', 'dropdown'):
-			if rec[Column.text_validation_type.value] not in ('number', 'integer'):
-				if rec[Column.choices_calculations.value].strip():
-					invalid_msg ("non-radio / checkbox / numeric has choices or calculation")
-					print ("*%s*" % rec[Column.choices_calculations.value].strip())
-
-		if ('date' in rec[Column.field_label.value].lower()) or ('date' in rec[Column.variable.value].lower()):
-			if 'date' not in rec[Column.text_validation_type.value]:
-				invalid_msg ("looks like date but has no date validator")
-
-		if ('time' in rec[Column.field_label.value].lower()) or ('time' in rec[Column.variable.value].lower()):
-			if 'time' not in rec[Column.text_validation_type.value]:
-				invalid_msg ("looks like time but has no date validator")
-
-		choices = rec[Column.choices_calculations.value].strip()
-		if choices and '|' in choices and ',' in choices:
-			for cp in [x.strip() for x in choices.split('|')]:
-				if ',' not in cp:
-					invalid_msg ("malformed choice string '%s'" % cp)
-				else:
-					if cp.count (',') != 1:
-						invalid_msg ("malformed choice string '%s'" % cp)
-
-				# else:
-				# 	val_str, label_str = [x.strip() for x in cp.split(',', 1)]
-				# 	if ' ' in cp:
-				# 		invalid_msg ("illegal character in choice value '%s'" % val_str)
-
-
-def render_template (tmpl_str):
-	from jinja2 import Template
-	template = Template (tmpl_str)
-	return template.render ()
-
-
-
-
-
 
 
 ### END ###

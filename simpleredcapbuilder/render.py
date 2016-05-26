@@ -4,7 +4,18 @@ Take the structure of an compact data dictionary and use it to render a dd.
 
 ### IMPORTS
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from builtins import object
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
+
 import csv
+
+from jinja2 import Template
 
 from . import consts
 
@@ -82,6 +93,10 @@ class ExpandDbSchema (object):
 			self.write ("{% endfor -%}\n")
 
 
+
+def render_template (tmpl_str):
+	template = Template (tmpl_str)
+	return template.render ()
 
 
 ### END ###

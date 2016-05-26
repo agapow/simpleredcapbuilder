@@ -4,4 +4,5 @@ To do
 * tags, inclusion and exlusion, values
 * allow repeats for forms, sections, items on the same row
 * better parsing of tags and repeats
-* inclusion of external defines
+* inclusion of external defines / values
+* fake sections

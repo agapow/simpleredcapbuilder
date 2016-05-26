@@ -7,6 +7,14 @@ Convert a compact REDCap data dictionary to the full and proper form.
 
 ### CONSTANTS & DEFINES
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
+
 import csv
 
 from simpleredcapbuilder import __version__ as version
@@ -72,15 +80,12 @@ def main ():
 	with open (args.outfile, 'w') as out_hndl:
 		out_hndl.write (exp_tmpl)
 
-	# now render the template
+	# do the postvalidation
+	with open (args.outfile, 'rU') as in_hndl:
+		rdr = csv.DictReader (in_hndl)
+		for r in rdr:
+			post_validate (r)
 
-	# with open (args.outfile, 'w') as out_hndl:
-	# 	wrtr = csv.DictWriter (out_hndl,
-	# 		fieldnames=[x.value for x in consts.OUTPUT_COLS],
-	# 		extrasaction='ignore',
-	# 	)
-	# 	wrtr.writeheader()
-	# 	wrtr.writerows (exp_recs)
 
 
 if __name__ == '__main__':

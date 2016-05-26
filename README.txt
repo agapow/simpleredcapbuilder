@@ -45,9 +45,23 @@ be repeated. For example:
 * ``form: (1, 'one'), (2, 'two'), (3, 'three')``
 
 That is, the repeat element starts with a qualifier saying whether the repeat is
-for the row, section or form. If no qualifier is given, it is assumed to be for the item. This is followed by either a range of numbers, or a sequence of values.
+for the row, section or form. If no qualifier is given, it is assumed to be for the item. This is followed by either a range of numbers, or a sequence of values. (The sequence is anything that when enclosed in square braces will
+look like a legal list to Python.)
 
-When this data dictionary is expanded, the associated items will be repeated. 
+When this data dictionary is expanded, the associated items will be repeated. See the example ``simple-but-useless`` for an illustration.
+
+Obviously, simply repeating a row or section is useless: variable identifiers
+will be repeated, fields will have the same name, etc. simpleredcapbuildergets around this problem by embedding and interpreting a template language (jinja2)
+in the data dictionary. For example, an item may have the repeat value of ``item: 1-3`` and the variable name of ``sample_{{ i_iter }}`` and the field
+label of ``Sample number {[ i_iter ]}``. These will result in three rows,
+named and labelled::
+
+	sample_1 ... Sample number 1
+	sample_2 ... Sample number 2
+	sample_3 ... Sample number 3
+
+The sequence of values used in any repeat loop are ``i_iter``, ``s_iter`` and
+``f_iter`` for item, section and form repeats respectively. See the example ``simple-and-useful`` for an illustration.
 
 
 
@@ -59,12 +73,27 @@ REDcap databases, but a lot of conflicting forces. The simple addition of a
 few columns seems the best solution, you can easily make an old schema into
 the new format with minial modification. This does set up a lot of parsing
 issues (e.g. telling the difference between repetition of the rows and
-sections). The qualifiers seem to simple solve this problem. 
+sections). The qualifiers seem to simple solve this problem.
 
 This approach allowed me to collapse a 3000 item data dictionary down into less than 600 rows, with a commensurate consistency in how items were named and
-behaved. 
+behaved.
 
 Note that Excel strips leading single quotes from strings, which is a delightful behaviour.
 
+simpleredcapbuilder leaves a few intermediate files that may be useful for
+debugging output or understanding how it works:
+
+* ``.json``: a representation of the structure of the compact data dictionary
+* ``.jinja``: the data dictionary rendered into a
+* ``.expanded.csv``: the final rendered form for upload into REDCap
 
 
+This project went rapidly through several iterations and some of the code and design is frankly a bit ropey and could be better written. However, it works.
+
+
+References
+----------
+
+* `simpleredcapbuilder code repository <https://github.com/agapow/simpleredcapbuilder>`__
+
+* `Jinja2 templating system <http://jinja.pocoo.org/>`__

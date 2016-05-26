@@ -2,3 +2,6 @@
 __pycache__
 .DS_Store
 examples/euclids*
+examples/*.json
+examples/*.jinja
+examples/*expanded.csv

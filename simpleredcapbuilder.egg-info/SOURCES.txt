@@ -1,8 +1,10 @@
+README.txt
 setup.cfg
 setup.py
 simpleredcapbuilder/__init__.py
 simpleredcapbuilder/consts.py
 simpleredcapbuilder/expddreader.py
+simpleredcapbuilder/render.py
 simpleredcapbuilder.egg-info/PKG-INFO
 simpleredcapbuilder.egg-info/SOURCES.txt
 simpleredcapbuilder.egg-info/dependency_links.txt
