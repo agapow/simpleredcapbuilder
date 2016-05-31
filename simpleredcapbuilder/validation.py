@@ -40,11 +40,11 @@ def check_needs_choices (rec):
 	if rec[COL.field_type.value] in ('radio', 'checkbox', 'dropdown'):
 		if not rec[COL.choices_calculations.value].strip():
 			complain (rec, "radio / checkbox / dropdown has no choices")
-		if rec[Column.text_validation_type.value].strip():
+		if rec[COL.text_validation_type.value].strip():
 			complain (rec, "radio / checkbox / dropdown has text validation")
-		if rec[Column.text_validation_min.value].strip():
+		if rec[COL.text_validation_min.value].strip():
 			complain (rec, "radio / checkbox / dropdown has text min")
-		if rec[Column.text_validation_max.value].strip():
+		if rec[COL.text_validation_max.value].strip():
 			complain (rec, "radio / checkbox / dropdown has text max")
 	else:
 		if rec[COL.text_validation_type.value] not in ('number', 'integer'):
@@ -58,19 +58,23 @@ def check_dates_and_times (rec):
 			complain (rec, "looks like date but has no date validator")
 
 	if ('time' in rec[COL.field_label.value].lower()) or ('time' in rec[COL.variable.value].lower()):
-		if 'time' not in rec[Column.text_validation_type.value]:
+		if 'time' not in rec[COL.text_validation_type.value]:
 			complain (rec, "looks like time but has no date validator")
 
 
 def check_choices (rec):
 	choices = rec[COL.choices_calculations.value].strip()
 	if choices and '|' in choices and ',' in choices:
-		for cp in [x.strip() for x in choices.split('|')]:
-			if ',' not in cp:
-				complain (rec, "malformed choice string '%s'" % cp)
-			else:
-				if cp.count (',') != 1:
+		if rec[COL.field_type.value] in ('radio', 'checkbox', 'dropdown'):
+			choice_pairs = [x.strip() for x in choices.split('|')]
+			if (8 < len (choice_pairs)) and (rec[COL.field_type.value] == 'radio'):
+				complain (rec, 'radio with many choice should probably be dropdown')
+			for cp in choice_pairs:
+				if ',' not in cp:
 					complain (rec, "malformed choice string '%s'" % cp)
+				else:
+					if cp.count (',') != 1:
+						complain (rec, "malformed choice string '%s'" % cp)
 
 
 def post_validate (rec):
