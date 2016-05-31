@@ -5,4 +5,4 @@ To do
 * allow repeats for forms, sections, items on the same row
 * better parsing of tags and repeats
 * inclusion of external defines / values
-* fake sections
+* fake subsections that can appear inside sections but not in the form

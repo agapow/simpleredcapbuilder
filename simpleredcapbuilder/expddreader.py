@@ -32,6 +32,7 @@ from ast import literal_eval as leval
 
 from . import consts
 from .consts import Column
+from .validation import pre_validate
 
 __ALL__ = [
 	'ExpDataDictReader',
@@ -91,7 +92,7 @@ class ExpDataDictReader (object):
 			md_statements = [md_str.strip()]
 
 		# now parse statements
-		md_dict = {}
+		md_dict = {'form': [], 'section': [], 'item': []}
 		for md_st in md_statements:
 			if ':' in md_st:
 				qual, val = [x.strip() for x in md_st.split(':', 1)]
@@ -100,9 +101,11 @@ class ExpDataDictReader (object):
 			else:
 				qual = 'item'
 				val = md_st.strip()
-			assert not qual in md_dict, \
-				"multiple statements for '%s' in '%s'" % (qual, md_st)
+			assert not md_dict[qual], \
+				"multiple statements for '%s' in '%s'" % (qual, md_statements)
 			md_dict[qual] = val
+
+		return md_dict
 
 	def parse_tags_str (self, s):
 		"""
@@ -125,23 +128,25 @@ class ExpDataDictReader (object):
 		else:
 			md_dict = self.parse_metadata_qual (s)
 			for k, v in list (md_dict.items()):
-
-				if ',' in v:
+				if not v:
+					continue
+				elif ',' in v:
 					# must be a explicit sequence
 					# hideous but I eval the string to get a list
 					try:
-						rpt_list = leval ("[%s]" % rpt_str)
-					except Error as err:
+						rpt_list = leval ("[%s]" % v)
+					except Exception as err:
 						print ("eval string")
-						print (rpt_str)
+						print (v)
 						raise
 				else:
-					assert '-' in rpt_str, "can't interpret '%s' as range" % rpt_str
-					start, stop = [int (x) for x in rpt_str.split ('-', 1)]
+					assert '-' in v, "can't interpret '%s' as range" % v
+					start, stop = [int (x) for x in v.split ('-', 1)]
 					rpt_list = list (range (start, stop+1))
 
 				md_dict[k] = rpt_list
 
+			assert len (md_dict) == 3, "bad dict %s" % md_dict
 			return md_dict
 
 
@@ -153,7 +158,6 @@ class ExpDataDictReader (object):
 		all_forms = []
 
 		num_recs = len (recs)
-		print ("Parsing %s recs ..." % num_recs)
 
 		i = 0
 		while i < num_recs:

@@ -14,7 +14,7 @@ standard_library.install_aliases()
 from .consts import Column as COL
 
 __all__ = [
-   'pre-validate',
+   'pre_validate',
    'post_validate',
 ]
 
