@@ -40,10 +40,11 @@ class Column (Enum):
 	matrix_ranking = 'Matrix Ranking?'
 	field_annotation = 'Field Annotation'
 
-_ALL_COLS = [x for x in Column]
+ALL_COLS = [x for x in Column]
+ALL_NAMES = [x.value for x in ALL_COLS]
 
-META_COLS = _ALL_COLS[:2]
-OUTPUT_COLS = _ALL_COLS[2:]
+META_COLS = ALL_COLS[:2]
+OUTPUT_COLS = ALL_COLS[2:]
 
 MANDATORY_COLS = (getattr (Column, x) for x in ['variable', 'form_name',
 	'field_type', 'field_label'])

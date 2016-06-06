@@ -32,6 +32,8 @@ simpleredcapbuilder installs a single script, that is called::
 	  -h, --help            show this help message and exit
 	  -o OUTFILE, --outfile OUTFILE
 	                        output expanded redcap data dictionary
+	  -i INCLUDE_TAGS, --include-tags INCLUDE_TAGS
+                         only include untagged sections or those with this tag
 
 This accepts a "compact" REDCap data dictionary, which allows which actually
 follows the form of the standard data dictionary with two additional columns:
@@ -43,12 +45,14 @@ row, should be repeated. For example:
 * ``item: 'A', 'B', 'C'``
 * ``section: 'foo', 'bar', 'baz'``
 * ``form: (1, 'one'), (2, 'two'), (3, 'three')``
+* ``item: 3-4; form: 'low', 'high'``
 
 That is, the repeat element starts with a qualifier saying whether the repeat is
 for the row, section or form. If no qualifier is given, it is assumed to be for
 the item. This is followed by either a range of numbers, or a sequence of
 values. (The sequence is anything that when enclosed in square braces will look
-like a legal list to Python.)
+like a legal list to Python.) Multiple qualifiying statement may be seperated by
+a semicolon.
 
 When this data dictionary is expanded, the associated items will be repeated.
 See the example ``simple-but-useless`` for an illustration.
@@ -70,6 +74,27 @@ The sequence of values used in any repeat loop are ``i_iter``, ``s_iter`` and
 
 More complex transformations are possible and you are referred to the Jinja documentation.
 
+Items, sections and forms can be optionally included in an expanded schema by the use of tags. Basically, tags allow pieces of the form to be labelled and any expansion to selectively include pices of the form with a given label. The 'tags' column of the schema follows a similar form to the 'repeat':
+
+* ``foo``
+* ``item: foo``
+* ``section: foo, bar, baz; form: quux``
+
+That is, the tags element starts with a qualifier saying whether the tag list is
+for the row, section or form. If no qualifier is given, it is assumed to be for
+the item. This is followed by a single word/symbol or a comma separated list of
+words/symbols. Multiple qualifying statement may be separated by a semicolon.
+
+Tags are selected for inclusion with the commandline flag ``-i/--include-tags``. Multiple tags are selected with multiple uses of this flag. The following logic is used for deciding which items are included:
+
+* By default, all items are selected. But if any tags are selected (i.e. the ``-i`` flag is used at least once), then only the untagged items are automatically included.
+
+* Items with the corresponding tag are included.
+
+* Enclosed items (e.g. sections and items within forms) that are not included will not be included either.
+
+* Having any selected tag will lead to an item being included - it doesn't need to have all the selected tags. 
+
 
 Various tips
 ------------
@@ -87,7 +112,13 @@ Sometimes you need to repeat a small set of fields that are less than a whole se
 it's possible to use jinja to to produce a "fake" (invisible) section that will
 be repeated. Jinja tags of the form ``{# ... #}`` will produce no output, and can thus be used as a section header. So you could title a section ``{# fakesection sample-date #}`` and repeat it, without it appearing as a section in the output. Note that you still can't have a repeating fake section inside a repeating section.
 
-Almost inevitably, after writing this I find that someoen else had the same thought: https://github.com/chop-dbhi/redcap-repeat
+If you want to expand a schema using only the untagged fields, use the '-i' flag with a tag that doesn't exist, e.g.::
+
+	% expand-redcap-schema -i dummytag myschema.csv
+
+Note that tags don't have to be quoted like list items in the repeat field. IN fact, if you do quote them, it would probably be difficult to pass the tag name on the commandline.
+
+Almost inevitably, after writing this I find that someone else had the same thought: https://github.com/chop-dbhi/redcap-repeat. It looks like a much simpler and user-friendly solution, albeit not as powerful but suitable for many use cases.
 
 
 References

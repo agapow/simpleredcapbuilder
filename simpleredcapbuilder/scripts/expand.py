@@ -44,25 +44,33 @@ def parse_clargs ():
 	aparser.add_argument ('infile', help='compact REDCap file to be processed')
 
 	aparser.add_argument ('-o', "--outfile",
-		help='output exapnded redcap data dictionary',
+		help='output expanded redcap data dictionary',
 		default=None,
 	)
 
-	aparser.add_argument('--include-tags', action='append',
+	aparser.add_argument('-i', '--include-tags', action='append',
 		help='only include untagged sections or those with this tag',
+	)
+
+	aparser.add_argument('-n', '--name', action='store_true',
+		help='name the output file for the tags passed in',
+		default=False,
 	)
 
 	args = aparser.parse_args()
 
 	if args.outfile == None:
-		args.outfile = args.infile.replace ('.csv', '.expanded.csv')
+		if args.name and args.include_tags:
+			ext = '.inc-%s.expanded.csv' % '-'.join (args.include_tags)
+		else:
+			ext = '.expanded.csv'
+		args.outfile = args.infile.replace ('.csv', ext)
 
 	return args
 
 
 def main ():
 	args = parse_clargs()
-	print (args)
 
 	# read in compact dd and parse out structure
 	print ("Parsing & validating input file ...")
@@ -80,13 +88,13 @@ def main ():
 	print ("Expanding structure to template ...")
 	tmpl_pth = args.infile.replace ('.csv', '.jinja')
 	xpndr = ExpandDbSchema()
-	xpndr.expand (exp_dd_struct, out_pth=tmpl_pth)
+	xpndr.expand (exp_dd_struct, using_tags=args.include_tags, out_pth=tmpl_pth)
 
 	# now render the template
 	print ("Rendering template ...")
 	with open (tmpl_pth, 'rU') as in_hndl:
 		tmpl_data = in_hndl.read()
-	exp_tmpl = render_template (tmpl_data)
+	exp_tmpl = render_template (tmpl_data, {'tags': args.include_tags})
 	print ("Saving template as data dictionary ...")
 	with open (args.outfile, 'w') as out_hndl:
 		out_hndl.write (exp_tmpl)

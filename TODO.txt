@@ -6,3 +6,4 @@ To do
 * better parsing of tags and repeats
 * inclusion of external defines / values
 * fake subsections that can appear inside sections but not in the form
+* an exclusion where all tags are included except for specific exc ones

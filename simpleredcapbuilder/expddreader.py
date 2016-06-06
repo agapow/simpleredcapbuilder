@@ -31,7 +31,7 @@ import os
 from ast import literal_eval as leval
 
 from . import consts
-from .consts import Column
+from .consts import Column, ALL_NAMES
 from .validation import pre_validate
 
 __ALL__ = [
@@ -61,10 +61,15 @@ class ExpDataDictReader (object):
 
 	def __del__ (self):
 		if self._opened_file:
-			self._in_hndl.close()
+			if hasattr (self, '_in_hndl'):
+				self._in_hndl.close()
 
 	def parse (self):
 		rdr = csv.DictReader (self._in_hndl)
+		# check fieldnames in input
+		legal_fld_names = []
+		for in_fld in rdr.fieldnames:
+			assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
 		recs = [self.pre_process (r) for r in rdr]
 		return self.parse_all_recs (recs)
 
@@ -116,7 +121,8 @@ class ExpDataDictReader (object):
 		else:
 			md_dict = self.parse_metadata_qual (s)
 			for k, v in list (md_dict.items()):
-				md_dict[k] = {x.trim():True for x in v.split(',')}
+				if v:
+					md_dict[k] = [x.strip() for x in v.split(',')]
 			return md_dict
 
 	def parse_repeat_str (self, s):
