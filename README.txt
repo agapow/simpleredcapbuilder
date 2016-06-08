@@ -23,7 +23,7 @@ Using simpleredcapbuilder
 
 simpleredcapbuilder installs a single script, that is called::
 
-	usage: expand-redcap-schema [-h] [-o OUTFILE] infile
+	usage: expand-redcap-schema [-h] [-o OUTFILE] [-i INCLUDE_TAGS] [-n] infile
 
 	positional arguments:
 	  infile                compact REDCap file to be processed
@@ -33,7 +33,8 @@ simpleredcapbuilder installs a single script, that is called::
 	  -o OUTFILE, --outfile OUTFILE
 	                        output expanded redcap data dictionary
 	  -i INCLUDE_TAGS, --include-tags INCLUDE_TAGS
-                         only include untagged sections or those with this tag
+	                        only include untagged sections or those with this tag
+	  -n, --name            name the output file for the tags passed in
 
 This accepts a "compact" REDCap data dictionary, which allows which actually
 follows the form of the standard data dictionary with two additional columns:
@@ -94,6 +95,8 @@ Tags are selected for inclusion with the commandline flag ``-i/--include-tags``.
 * Enclosed items (e.g. sections and items within forms) that are not included will not be included either.
 
 * Having any selected tag will lead to an item being included - it doesn't need to have all the selected tags. 
+
+See the example ``simple-and-tagged`` for an illustration. Note that the ``-n`` flag is useful for labelling the output of selectively tagged schema.
 
 
 Various tips
