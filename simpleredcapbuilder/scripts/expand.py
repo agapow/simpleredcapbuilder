@@ -22,6 +22,7 @@ from simpleredcapbuilder import ExpDataDictReader
 from simpleredcapbuilder import ExpandDbSchema, render_template
 from simpleredcapbuilder import consts
 from simpleredcapbuilder import post_validate
+from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
 
 
 ### CODE ###
@@ -57,10 +58,10 @@ def parse_clargs ():
 		default=False,
 	)
 
-#	aparser.add_argument ('-v', "--includes-vars",
-#		help='include external file of variable',
-#		default=None,
-#	)
+	aparser.add_argument ('-v', "--includes-vars",
+		help='include external file of variables',
+		default=None,
+	)
 
 	args = aparser.parse_args()
 
@@ -75,75 +76,10 @@ def parse_clargs ():
 
 
 def parse_included_vars (inc_var_pth):
-	ext = os.path.splitext (inc_var_pth)[1][1:].lower()
-	assert ext in FMTS, "external data format '%s' not recognised"
+	ext = ext_from_path (inc_var_pth)
+	fmt = ext_to_format (ext)
 	data = open (inc_var_pth, 'rU').read()
-
-	if ext in ['json']:
-		pass
-	elif ext in ['ini']:
-		pass
-	elif ext in ['yml', 'yaml']:
-		pass
-# 
-# # json - builtin json or simplejson as a fallback
-# try:
-#     import json
-# 
-#     formats['json'] = (json.loads, ValueError, MalformedJSON)
-# except ImportError:
-#     try:
-#         import simplejson
-# 
-#         formats['json'] = (
-#             simplejson.loads,
-#             simplejson.decoder.JSONDecodeError,
-#             MalformedJSON,
-#         )
-#     except ImportError:
-#         pass
-# 
-# 
-# # ini - Nobody likes you.
-# try:
-#     # Python 2
-#     import ConfigParser
-# except ImportError:
-#     # Python 3
-#     import configparser as ConfigParser
-# 
-# 
-# def _parse_ini(data):
-#     import StringIO
-# 
-#     class MyConfigParser(ConfigParser.ConfigParser):
-#         def as_dict(self):
-#             d = dict(self._sections)
-#             for k in d:
-#                 d[k] = dict(self._defaults, **d[k])
-#                 d[k].pop('__name__', None)
-#             return d
-# 
-#     p = MyConfigParser()
-#     p.readfp(StringIO.StringIO(data))
-#     return p.as_dict()
-# 
-# 
-# formats['ini'] = (_parse_ini, ConfigParser.Error, MalformedINI)
-# 
-# 
-# # yaml - with PyYAML
-# try:
-#     import yaml
-# 
-#     formats['yaml'] = formats['yml'] = (
-#         yaml.load,
-#         yaml.YAMLError,
-#         MalformedYAML,
-#     )
-# except ImportError:
-#     pass
-
+	return parse_ext_vars (data, fmt)
 
 
 
@@ -155,10 +91,12 @@ def main ():
 	rdr = ExpDataDictReader (args.infile)
 	exp_dd_struct = rdr.parse()
 
-	# read in compact dd and parse out structure
-	#if args.include_vars:
-	#	print ("Parsing file of included variables ...")
-	#	inc_vars = parse_included_vars (args.include_vars)
+	read in compact dd and parse out structure
+	if args.include_vars:
+		print ("Parsing file of included variables ...")
+		inc_vars = parse_included_vars (args.include_vars)
+	else:
+		inc_vars = {}
 
 	# dump structure as json
 	print ("Dumping structure as JSON ...")
@@ -177,7 +115,9 @@ def main ():
 	print ("Rendering template ...")
 	with open (tmpl_pth, 'rU') as in_hndl:
 		tmpl_data = in_hndl.read()
-	exp_tmpl = render_template (tmpl_data, {'tags': args.include_tags})
+	# XXX: need a better way to handle this
+	inc_vars['tags'] = args.include_tags
+	exp_tmpl = render_template (tmpl_data, inc_vars)
 	print ("Saving template as data dictionary ...")
 	with open (args.outfile, 'w') as out_hndl:
 		out_hndl.write (exp_tmpl)

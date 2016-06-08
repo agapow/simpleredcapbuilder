@@ -14,3 +14,4 @@ from .expddreader import *
 from .render import *
 from . import consts
 from .validation import *
+from .extvars import *
