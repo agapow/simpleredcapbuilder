@@ -1,8 +1,9 @@
 {
-    "items": [
-        "foo",
-        "bar",
-        "baz"
-    ]
+	"foo": [
+		"bar",
+		"baz"
+	],
+	"quux": 1,
+	"plugh": true
 }
 

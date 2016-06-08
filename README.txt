@@ -94,9 +94,11 @@ Tags are selected for inclusion with the commandline flag ``-i/--include-tags``.
 
 * Enclosed items (e.g. sections and items within forms) that are not included will not be included either.
 
-* Having any selected tag will lead to an item being included - it doesn't need to have all the selected tags. 
+* Having any selected tag will lead to an item being included - it doesn't need to have all the selected tags.
 
 See the example ``simple-and-tagged`` for an illustration. Note that the ``-n`` flag is useful for labelling the output of selectively tagged schema.
+
+Finally, the builder can also import files of values for inclusion in the file. These files of "external variables / values" are passed into the template when rendering it and substitute in like the iteration values, i.e. like any other jinja2 value. See the ``invars`` files in ``examples``. Formats accepted are .ini / config, JSON and YAML.
 
 
 Various tips
@@ -120,6 +122,9 @@ If you want to expand a schema using only the untagged fields, use the '-i' flag
 	% expand-redcap-schema -i dummytag myschema.csv
 
 Note that tags don't have to be quoted like list items in the repeat field. IN fact, if you do quote them, it would probably be difficult to pass the tag name on the commandline.
+
+Ini/config files are not nearly as powerful as the other formats for passing in
+external values.
 
 Almost inevitably, after writing this I find that someone else had the same thought: https://github.com/chop-dbhi/redcap-repeat. It looks like a much simpler and user-friendly solution, albeit not as powerful but suitable for many use cases.
 

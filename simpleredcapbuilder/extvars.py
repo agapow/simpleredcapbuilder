@@ -43,7 +43,7 @@ def parse_ext_vars (data, fmt):
 		try:
 			vars = json.loads (data)
 		except ValueError as err:
-			raise MalformedJSON (u'%s ...' % data[:40])
+			raise ValueError ("malformed JSON '%s' ..." % data[:40])
 		except ImportError:
 			raise RuntimeError ('no library for handling JSON-formatted data')
 
@@ -62,7 +62,7 @@ def parse_ext_vars (data, fmt):
 			rdr.readfp (io.StringIO (data))
 			vars = rdr._sections
 		except ConfigParser.Error as err:
-			raise MalformedINI (u'%s ...' % data[:40])
+			raise ValueError ("malformed INI '%s' ..." % data[:40])
 		except ImportError:
 			raise RuntimeError ('no library for handling JSON-formatted data')
 
@@ -71,13 +71,14 @@ def parse_ext_vars (data, fmt):
 		try:
 			vars = yaml.load (data)
 		except yaml.YAMLError as err:
-			raise MalformedJSON (u'%s ...' % data[:40])
+			raise ValueError ("malformed YAML '%s' ..." % data[:40])
 		except ImportError:
 			raise RuntimeError ('no library for handling JSON-formatted data')
 
 	else:
 		raise ValueError ("unrecognised file format '%s'" % ext)
 
+	print (vars)
 	return vars
 
 

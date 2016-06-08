@@ -1,15 +1,5 @@
-sudo: false
-language: python
-python:
-  - '2.6'
-  - '2.7'
-  - '3.3'
-  - '3.4'
-  - 'pypy'
-
-install: pip install -e .[yaml,toml,tests]
-
-script:
-  - py.test -v
-  - flake8 jinja2cli tests
-
+foo:
+  - 'bar'
+  - 'baz'
+quux: 1
+plugh: true
