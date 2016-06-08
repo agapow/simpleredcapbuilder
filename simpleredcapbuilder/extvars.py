@@ -18,7 +18,7 @@ __all__ = [
 ### CODE ###
 
 def ext_from_path (pth):
-	return ext = os.path.splitext (inc_var_pth)[1][1:]
+	return os.path.splitext (pth)[1][1:]
 
 
 def ext_to_format (ext):
@@ -27,6 +27,8 @@ def ext_to_format (ext):
 		'YML': 'YAML',
 		'YAML': 'YAML',
 		'INI': 'INI',
+		'CFG': 'INI',
+		'CONFIG': 'INI',
 	}
 	fmt = fmt_map.get (ext.upper(), None)
 	if fmt:
@@ -36,7 +38,7 @@ def ext_to_format (ext):
 
 
 def parse_ext_vars (data, fmt):
-	if ext in ['json']:
+	if fmt == 'JSON':
 		import json
 		try:
 			vars = json.loads (data)
@@ -45,25 +47,26 @@ def parse_ext_vars (data, fmt):
 		except ImportError:
 			raise RuntimeError ('no library for handling JSON-formatted data')
 
-	elif ext in ['ini']:
+	elif fmt == 'INI':
 		try:
 			# Python 2
 			import ConfigParser
+			import StringIO as io
 		except ImportError:
 			# Python 3
 			import configparser as ConfigParser
+			import io
 
 		try:
-			rdr = ConfigParser()
-			import StringIO
-			rdr.readfp (StringIO.StringIO (data))
-			vars = rdr.as_dict()
+			rdr = ConfigParser.ConfigParser()
+			rdr.readfp (io.StringIO (data))
+			vars = rdr._sections
 		except ConfigParser.Error as err:
 			raise MalformedINI (u'%s ...' % data[:40])
 		except ImportError:
 			raise RuntimeError ('no library for handling JSON-formatted data')
 
-	elif ext in ['yml', 'yaml']:
+	elif fmt == 'YAML':
 		import yaml
 		try:
 			vars = yaml.load (data)

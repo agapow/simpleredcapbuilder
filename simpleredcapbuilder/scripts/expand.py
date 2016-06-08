@@ -58,7 +58,7 @@ def parse_clargs ():
 		default=False,
 	)
 
-	aparser.add_argument ('-v', "--includes-vars",
+	aparser.add_argument ('-v', "--include-vars",
 		help='include external file of variables',
 		default=None,
 	)
@@ -91,7 +91,7 @@ def main ():
 	rdr = ExpDataDictReader (args.infile)
 	exp_dd_struct = rdr.parse()
 
-	read in compact dd and parse out structure
+	# read in compact dd and parse out structure
 	if args.include_vars:
 		print ("Parsing file of included variables ...")
 		inc_vars = parse_included_vars (args.include_vars)
