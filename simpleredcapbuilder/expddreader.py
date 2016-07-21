@@ -9,7 +9,7 @@ Thinking this problem out loud:
 - So it seems we need to insert special rows for the start of forms and sections, so the format is no longer a superset of the normal.
 - At least this will make it easier to parseand convert from the normal.
 
-- Note that Excel strips leading singel quotes from strings
+- Note that Excel strips leading single quotes from strings
 
 """
 
@@ -51,23 +51,29 @@ def pprint (x):
 
 
 class ExpDataDictReader (object):
-	def __init__ (self, pth_or_hndl):
-		if isinstance (pth_or_hndl, ''.__class__):
-			self._opened_file = True
-			pth_or_hndl = open (pth_or_hndl, "r")
-		else:
-			self._opened_file = False
-		self._in_hndl = pth_or_hndl
+	def __init__ (self, pth):
+		self._in_pth = pth
 
-	def __del__ (self):
-		if self._opened_file:
-			if hasattr (self, '_in_hndl'):
-				self._in_hndl.close()
+
+	def read_file (self):
+		filetype = consts.FileType.from_path (self._in_pth)
+		if filetype is FileType.csv:
+			with open (self._in_pth, 'r') as in_hndl:
+				rdr = csv.DictReader (in_hndl)
+				recs = [r for r in rdr]
+				return rdr.fieldnames, recs
+		else:
+			import xlrd
+			wb = xlrd.open_workbook (self._in_pth)
+			sht = wb.sheet_by_index[0]
+			# get fieldnames
+			for i in range (1, 10):
+				print sht.cell (0, i).value
+
 
 	def parse (self):
 		rdr = csv.DictReader (self._in_hndl)
 		# check fieldnames in input
-		legal_fld_names = []
 		for in_fld in rdr.fieldnames:
 			assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
 		recs = [self.pre_process (r) for r in rdr]

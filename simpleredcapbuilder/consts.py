@@ -16,6 +16,27 @@ from enum import Enum
 
 ### CONSTANTS & DEFINES
 
+class FileType (Enum):
+	# file type and list of acceptable extensions
+	csv = ('csv')
+	xls = ('xls')
+	xlsx = ('xlsx')
+
+	@classmethod
+	def from_path (cls, pth):
+		"""
+		Sniff the file type from a file path (extension).
+
+		This method is case-insensitive and will work off raw extensions.
+		"""
+		pth = pth.lower()
+		for member in cls:
+			for ext in member.value:
+				if path.endswith ('.%s' % ext):
+					return member
+		raise ValueError ("can't recognise file type of '%s'" % pth)
+
+
 # column headers
 class Column (Enum):
 	tags = 'tags'
