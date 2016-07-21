@@ -91,7 +91,6 @@ def parse_included_vars (inc_var_pth):
 
 def main ():
 	args = parse_clargs()
-	print (args)
 
 	# read in compact dd and parse out structure
 	print ("Parsing & validating input file ...")

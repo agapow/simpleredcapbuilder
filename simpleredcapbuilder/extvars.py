@@ -78,7 +78,6 @@ def parse_ext_vars (data, fmt):
 	else:
 		raise ValueError ("unrecognised file format '%s'" % ext)
 
-	print (vars)
 	return vars
 
 
