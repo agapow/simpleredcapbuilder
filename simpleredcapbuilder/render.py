@@ -16,6 +16,7 @@ standard_library.install_aliases()
 import csv
 
 from jinja2 import Template
+from jinja2 import exceptions as jexcept
 
 from . import consts
 from . import jext
@@ -114,7 +115,13 @@ def render_template (tmpl_str, render_vals={}):
 	template = Template (tmpl_str)
 	# XXX: allow for external vars to be passed in
 	render_vals.update (jext.EXT_DICT)
-	return template.render (**render_vals)
+	try:
+		rendered_tmpl = template.render (**render_vals)
+		return rendered_tmpl
+	except jexcept.UndefinedError as err:
+		print ('variable used in schema is undefined')
+		raise
+
 
 
 ### END ###

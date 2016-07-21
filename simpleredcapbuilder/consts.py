@@ -18,9 +18,9 @@ from enum import Enum
 
 class FileType (Enum):
 	# file type and list of acceptable extensions
-	csv = ('csv')
-	xls = ('xls')
-	xlsx = ('xlsx')
+	csv = ('csv',)
+	xls = ('xls',)
+	xlsx = ('xlsx',)
 
 	@classmethod
 	def from_path (cls, pth):
@@ -32,7 +32,7 @@ class FileType (Enum):
 		pth = pth.lower()
 		for member in cls:
 			for ext in member.value:
-				if path.endswith ('.%s' % ext):
+				if pth.endswith ('.%s' % ext):
 					return member
 		raise ValueError ("can't recognise file type of '%s'" % pth)
 

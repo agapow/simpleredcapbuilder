@@ -16,6 +16,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import csv
+import os
 
 from simpleredcapbuilder import __version__ as version
 from simpleredcapbuilder import ExpDataDictReader
@@ -65,12 +66,17 @@ def parse_clargs ():
 
 	args = aparser.parse_args()
 
+	filename, file_ext = os.path.splitext (args.infile)
+	args.fileroot = args.infile.replace (file_ext, '')
+
 	if args.outfile == None:
 		if args.name and args.include_tags:
 			ext = '.inc-%s.expanded.csv' % '-'.join (args.include_tags)
 		else:
 			ext = '.expanded.csv'
-		args.outfile = args.infile.replace ('.csv', ext)
+		args.outfile = args.fileroot + ext
+
+	assert (args.infile != args.outfile)
 
 	return args
 
@@ -85,11 +91,12 @@ def parse_included_vars (inc_var_pth):
 
 def main ():
 	args = parse_clargs()
+	print (args)
 
 	# read in compact dd and parse out structure
 	print ("Parsing & validating input file ...")
-	rdr = ExpDataDictReader (args.infile)
-	exp_dd_struct = rdr.parse()
+	rdr = ExpDataDictReader()
+	exp_dd_struct = rdr.parse (args.infile)
 
 	# read in compact dd and parse out structure
 	if args.include_vars:
@@ -101,13 +108,13 @@ def main ():
 	# dump structure as json
 	print ("Dumping structure as JSON ...")
 	import json
-	json_pth = args.infile.replace ('.csv', '.json')
+	json_pth = args.fileroot + '.json'
 	with open (json_pth, 'w') as out_hndl:
 	    json.dump (exp_dd_struct, out_hndl, indent=3)
 
 	# expand structure to templ
 	print ("Expanding structure to template ...")
-	tmpl_pth = args.infile.replace ('.csv', '.jinja')
+	tmpl_pth = args.fileroot + '.jinja'
 	xpndr = ExpandDbSchema()
 	xpndr.expand (exp_dd_struct, using_tags=args.include_tags, out_pth=tmpl_pth)
 

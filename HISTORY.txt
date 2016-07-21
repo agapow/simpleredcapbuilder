@@ -1,0 +1,14 @@
+History & changes
+=================
+
+
+v0.3 (20160721)
+---------------
+
+- added excell parsing
+
+
+v0.2 (2016 June)
+---------------
+
+- first public release

@@ -51,33 +51,49 @@ def pprint (x):
 
 
 class ExpDataDictReader (object):
-	def __init__ (self, pth):
-		self._in_pth = pth
 
+	def read_file (self, in_pth):
+		filetype = consts.FileType.from_path (in_pth)
 
-	def read_file (self):
-		filetype = consts.FileType.from_path (self._in_pth)
-		if filetype is FileType.csv:
-			with open (self._in_pth, 'r') as in_hndl:
+		if filetype is consts.FileType.csv:
+			# read csv file
+			with open (in_pth, 'r') as in_hndl:
 				rdr = csv.DictReader (in_hndl)
 				recs = [r for r in rdr]
-				return rdr.fieldnames, recs
+				return (rdr.fieldnames, recs)
 		else:
+			# otherwise read excel file
+			# grab the first sheet
 			import xlrd
-			wb = xlrd.open_workbook (self._in_pth)
-			sht = wb.sheet_by_index[0]
+			wb = xlrd.open_workbook (in_pth)
+			sht = wb.sheet_by_index (0)
+
+			# work out dimensions
+			# TODO: bulletproof against excess cols & rows
+			# TODO: allow not all rows to be defined
+			col_cnt = sht.ncols
+			row_cnt = sht.nrows
+
 			# get fieldnames
-			for i in range (1, 10):
-				print sht.cell (0, i).value
+			fieldnames = [sht.cell (0, i).value for i in range (col_cnt)]
 
+			# get records
+			recs = []
+			for i in range (1, row_cnt):
+				new_rec = {}
+				for j in range (col_cnt):
+					new_rec[fieldnames[j]] = sht.cell (i, j).value
+				recs.append (new_rec)
 
-	def parse (self):
-		rdr = csv.DictReader (self._in_hndl)
-		# check fieldnames in input
-		for in_fld in rdr.fieldnames:
+			# return
+			return (fieldnames, recs)
+
+	def parse (self, in_pth):
+		fieldnames, recs = self.read_file (in_pth)
+		for in_fld in fieldnames:
 			assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
-		recs = [self.pre_process (r) for r in rdr]
-		return self.parse_all_recs (recs)
+		proc_recs = [self.pre_process (r) for r in recs]
+		return self.parse_all_recs (proc_recs)
 
 	def pre_process (self, rec):
 		"""
