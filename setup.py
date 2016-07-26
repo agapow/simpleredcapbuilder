@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-from redcapbuilder import __version__
+from simpleredcapbuilder import __version__
 
 setup(
    name='simpleredcapbuilder',
