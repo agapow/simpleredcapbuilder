@@ -22,7 +22,7 @@ from simpleredcapbuilder import __version__ as version
 from simpleredcapbuilder import ExpDataDictReader
 from simpleredcapbuilder import ExpandDbSchema, render_template
 from simpleredcapbuilder import consts
-from simpleredcapbuilder import post_validate
+from simpleredcapbuilder import PostValidator
 from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
 
 
@@ -132,8 +132,9 @@ def main ():
 	print ("Post-validating output data dictionary ...")
 	with open (args.outfile, 'rU') as in_hndl:
 		rdr = csv.DictReader (in_hndl)
-		for r in rdr:
-			post_validate (r)
+		recs = [r for r in rdr]
+		pvalidator = PostValidator()
+		pvalidator.check (recs)
 
 	print ("Done.")
 

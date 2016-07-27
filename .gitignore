@@ -1,5 +1,6 @@
 *.pyc
 __pycache__
+*.bak
 .DS_Store
 *.egg-info
 examples/euclids*

@@ -11,20 +11,26 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+import re
+
 from .consts import Column as COL
+from .utils import warn, error
 
 __all__ = [
    'pre_validate',
-   'post_validate',
+   'PostValidator',
 ]
 
 
 ### CONSTANTS & DEFINES
 
+BL_STR_VAR_REGEX = re.compile (r'\[([^\]\(]+)')
+
+
 ### CODE ###
 
 def complain (rec, msg):
-	print ("Record %s is possibly invalid: %s" % (
+	print ("WARNING: Record %s is possibly invalid: %s" % (
       rec[COL.variable.value],
       msg,
    ))
@@ -72,19 +78,34 @@ def check_choices (rec):
 			for cp in choice_pairs:
 				if ',' not in cp:
 					complain (rec, "malformed choice string '%s'" % cp)
-				else:
-					if cp.count (',') != 1:
-						complain (rec, "malformed choice string '%s'" % cp)
 
 
-def post_validate (rec):
-   """
-   Check a final record for potential problems.
+class PostValidator (object):
+   def __init__ (self):
+      self.field_ids = []
 
-   At the moment we just check the id, because it could have altered between
-   the input and output. Everything else is taken care of in pre-validation.
-   """
-   check_id_length (rec)
+   def check (self, recs):
+      for r in recs:
+         self.check_rec (r)
+
+   def check_rec (self, rec):
+      # check id right length
+      check_id_length (rec)
+
+      # check bl vars are proper
+      var_name = rec[COL.variable.value]
+      if var_name in self.field_ids:
+         error ("variable '%s' duplicated" % var_name)
+      else:
+         self.field_ids.append (rec[COL.variable.value])
+
+      # check bl vars are proper
+      bl_str = rec[COL.branching_logic.value]
+      var_names = [m for m in BL_STR_VAR_REGEX.finditer (bl_str)]
+      for m in var_names:
+         curr_var = m.groups()[0]
+         if curr_var not in self.field_ids:
+            complain (rec, "unrecognised variable '%s' in branching logic" % curr_var)
 
 
 def pre_validate (rec):

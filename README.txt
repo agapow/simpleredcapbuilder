@@ -7,10 +7,10 @@ Background
 REDCap is a fabulously useful tool for creating web databases, including a
 useful scheme for defining the database schema ("data dictionaries") in plain
 CSV files. However, difficulties arise when designing complex schema. It
-is cumbersome to code multiuple occurences of essentially the same field (e.g.
+is cumbersome to code multiple occurrences of essentially the same field (e.g.
 ``sample_1 ... sample_2 ...``). If changes need to be made, keeping wording and
 behaviour consistent across multiple instances is tedious. If a number of
-similar databases have to be deployed, the consistency problem is multipled.
+similar databases have to be deployed, the consistency problem is multiplied.
 
 ``simpleredcapbuilder`` allows you to write REDCap schema in a more compact
 form that allows for repetition of rows, sections and forms (instruments), with
@@ -52,14 +52,14 @@ That is, the repeat element starts with a qualifier saying whether the repeat is
 for the row, section or form. If no qualifier is given, it is assumed to be for
 the item. This is followed by either a range of numbers, or a sequence of
 values. (The sequence is anything that when enclosed in square braces will look
-like a legal list to Python.) Multiple qualifiying statement may be seperated by
+like a legal list to Python.) Multiple qualifying statement may be separated by
 a semicolon.
 
 When this data dictionary is expanded, the associated items will be repeated.
 See the example ``simple-but-useless`` for an illustration.
 
 Obviously, simply repeating a row or section is useless: variable identifiers
-will be repeated, fields will have the same name, etc. simpleredcapbuildergets
+will be repeated, fields will have the same name, etc. simpleredcapbuilder gets
 around this problem by embedding and interpreting a template language (jinja2)
 in the data dictionary. For example, an item may have the repeat value of
 ``item: 1-3`` and the variable name of ``sample_{{ i_iter }}`` and the field
@@ -75,7 +75,7 @@ The sequence of values used in any repeat loop are ``i_iter``, ``s_iter`` and
 
 More complex transformations are possible and you are referred to the Jinja documentation.
 
-Items, sections and forms can be optionally included in an expanded schema by the use of tags. Basically, tags allow pieces of the form to be labelled and any expansion to selectively include pices of the form with a given label. The 'tags' column of the schema follows a similar form to the 'repeat':
+Items, sections and forms can be optionally included in an expanded schema by the use of tags. Basically, tags allow pieces of the form to be labelled and any expansion to selectively include pieces of the form with a given label. The 'tags' column of the schema follows a similar form to the 'repeat':
 
 * ``foo``
 * ``item: foo``
@@ -86,7 +86,7 @@ for the row, section or form. If no qualifier is given, it is assumed to be for
 the item. This is followed by a single word/symbol or a comma separated list of
 words/symbols. Multiple qualifying statement may be separated by a semicolon.
 
-Tags are selected for inclusion with the commandline flag ``-i/--include-tags``. Multiple tags are selected with multiple uses of this flag. The following logic is used for deciding which items are included:
+Tags are selected for inclusion with the command line flag ``-i/--include-tags``. Multiple tags are selected with multiple uses of this flag. The following logic is used for deciding which items are included:
 
 * By default, all items are selected. But if any tags are selected (i.e. the ``-i`` flag is used at least once), then only the untagged items are automatically included.
 
@@ -121,7 +121,7 @@ If you want to expand a schema using only the untagged fields, use the '-i' flag
 
 	% expand-redcap-schema -i dummytag myschema.csv
 
-Note that tags don't have to be quoted like list items in the repeat field. IN fact, if you do quote them, it would probably be difficult to pass the tag name on the commandline.
+Note that tags don't have to be quoted like list items in the repeat field. IN fact, if you do quote them, it would probably be difficult to pass the tag name on the command line.
 
 Ini/config files are not nearly as powerful as the other formats for passing in
 external values.

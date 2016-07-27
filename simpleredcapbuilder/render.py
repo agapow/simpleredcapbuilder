@@ -15,11 +15,12 @@ standard_library.install_aliases()
 
 import csv
 
-from jinja2 import Template
+from jinja2 import Template, Undefined, StrictUndefined, DebugUndefined
 from jinja2 import exceptions as jexcept
 
 from . import consts
 from . import jext
+from . import utils
 
 
 ### CONSTANTS & DEFINES
@@ -110,9 +111,20 @@ class ExpandDbSchema (object):
 			self.write ("{% endif -%}\n")
 
 
+from jinja2 import Undefined
+
+class AlertUndefined (Undefined):
+	'''
+	When an undefined var found, give alert but keep going
+	'''
+	def _fail_with_undefined_error (self, *args, **kwargs):
+		utils.warn ('JINJA2: something was undefined!')
+		print (dir (self))
+		return None
+
 
 def render_template (tmpl_str, render_vals={}):
-	template = Template (tmpl_str)
+	template = Template (tmpl_str, undefined=AlertUndefined)
 	# XXX: allow for external vars to be passed in
 	render_vals.update (jext.EXT_DICT)
 	try:
