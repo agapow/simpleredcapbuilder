@@ -37,9 +37,11 @@ class ExpandDbSchema (object):
 	def write (self, s):
 		self.out_hndl.write (s)
 
-	def expand (self, db_schema, using_tags=False, out_pth=_TEMPLATE_PTH):
+	def expand (self, db_schema, inc_tags=False, exc_tags=False,
+			out_pth=_TEMPLATE_PTH):
 		self.db_schema = db_schema
-		self.using_tags = bool (using_tags)
+		self.inc_tags, self.exc_tags = inc_tags, exc_tags
+		assert not (inc_tags and exc_tags),"cannot have included and excluded tags"
 		with open (out_pth, 'w') as out_hndl:
 			self.out_hndl = out_hndl
 			self.csv_writer = csv.DictWriter (out_hndl,

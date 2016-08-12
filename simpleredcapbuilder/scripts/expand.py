@@ -54,6 +54,10 @@ def parse_clargs ():
 		help='only include untagged sections or those with this tag',
 	)
 
+	aparser.add_argument('-x', '--exclude-tags', action='append',
+		help='exclude sections with this tag',
+	)
+
 	aparser.add_argument('-n', '--name', action='store_true',
 		help='name the output file for the tags passed in',
 		default=False,
@@ -66,9 +70,15 @@ def parse_clargs ():
 
 	args = aparser.parse_args()
 
+	# can't both include and exclude tags
+	assert not (args.include_tags and args.exclude_tags), \
+		"cannot have both included and excluded tags"
+
+	# find the root file name, for naming intermediate files
 	filename, file_ext = os.path.splitext (args.infile)
 	args.fileroot = args.infile.replace (file_ext, '')
 
+	# workout what the output schema should be called
 	if args.outfile == None:
 		if args.name and args.include_tags:
 			ext = '.inc-%s.expanded.csv' % '-'.join (args.include_tags)
@@ -76,7 +86,9 @@ def parse_clargs ():
 			ext = '.expanded.csv'
 		args.outfile = args.fileroot + ext
 
-	assert (args.infile != args.outfile)
+	# just a dummy check on the above logic
+	assert (args.infile != args.outfile), "can't overwrite the input file"
+
 
 	return args
 
@@ -115,7 +127,8 @@ def main ():
 	print ("Expanding structure to template ...")
 	tmpl_pth = args.fileroot + '.jinja'
 	xpndr = ExpandDbSchema()
-	xpndr.expand (exp_dd_struct, using_tags=args.include_tags, out_pth=tmpl_pth)
+	xpndr.expand (exp_dd_struct, inc_tags=args.include_tags,
+		exc_tags=args.exclude_tags, out_pth=tmpl_pth)
 
 	# now render the template
 	print ("Rendering template ...")
