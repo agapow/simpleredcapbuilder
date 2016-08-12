@@ -80,8 +80,12 @@ def parse_clargs ():
 
 	# workout what the output schema should be called
 	if args.outfile == None:
-		if args.name and args.include_tags:
-			ext = '.inc-%s.expanded.csv' % '-'.join (args.include_tags)
+		if args.name and (args.include_tags or args.exclude_tags):
+			if args.include_tags:
+				stb = 'inc'
+			else:
+				stb = 'exc'
+			ext = '.stb-%s.expanded.csv' % (stb, '-'.join (args.include_tags))
 		else:
 			ext = '.expanded.csv'
 		args.outfile = args.fileroot + ext

@@ -41,7 +41,7 @@ class ExpandDbSchema (object):
 			out_pth=_TEMPLATE_PTH):
 		self.db_schema = db_schema
 		self.inc_tags, self.exc_tags = inc_tags, exc_tags
-		assert not (inc_tags and exc_tags),"cannot have included and excluded tags"
+		assert not (inc_tags and exc_tags), "cannot have included and excluded tags"
 		with open (out_pth, 'w') as out_hndl:
 			self.out_hndl = out_hndl
 			self.csv_writer = csv.DictWriter (out_hndl,
@@ -104,12 +104,16 @@ class ExpandDbSchema (object):
 		self.end_tags (itm)
 
 	def start_tags (self, item):
-		if item['tags'] and self.using_tags:
-			self.write ("{%% if are_any_tags_selected (%s, tags) -%%}\n" %
-				item['tags'])
+		if item['tags']
+			if self.inc_tags:
+				self.write ("{%% if are_any_tags_selected (%s, tags) -%%}\n" %
+					item['tags'])
+			if self.exc_tags:
+				self.write ("{%% if not are_any_tags_selected (%s, tags) -%%}\n" %
+					item['tags'])
 
 	def end_tags (self, item):
-		if item['tags'] and self.using_tags:
+		if item['tags'] and (self.inc_tags or self.exc_tags):
 			self.write ("{% endif -%}\n")
 
 
