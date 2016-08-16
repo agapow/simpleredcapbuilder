@@ -1,0 +1,226 @@
+Using simpleredcapbuilder
+=========================
+
+Commandline
+-----------
+
+There's no API for simpleredcapbuilder (or rather, no formal API). Instead,
+it installs a single script::
+
+	expand-redcap-schema [-h] [-o OUTFILE] [-i INCLUDE_TAGS]
+	                        [-x EXCLUDE_TAGS] [-n] [-v INCLUDE_VARS]
+	                        infile
+
+	positional arguments:
+	  infile                compact REDCap file to be processed
+
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  -o OUTFILE, --outfile OUTFILE
+	                        output expanded redcap data dictionary
+	  -i INCLUDE_TAGS, --include-tags INCLUDE_TAGS
+	                        only include untagged sections or those with this tag
+	  -x EXCLUDE_TAGS, --exclude-tags EXCLUDE_TAGS
+	                        exclude sections with this tag
+	  -n, --name            name the output file for the tags passed in
+	  -v INCLUDE_VARS, --include-vars INCLUDE_VARS
+	                        include external file of variables
+
+In brief, this produces a standard REDCap data dictionary from a "compact" form.
+This compact dictionary follows the form of the standard but with two additional
+columns: ``repeat`` and ``tags``. These allow rows, sections or forms to be
+repeated or to be optionally included. Next, a templating language can be used
+to embed expressions in the compact input, allowing simple logical substitutions
+and text expansions.  in the  Finally, files of external values can be defined
+(e.g. choices, validation types, minimums and maximums) and used in the compact
+dictionary, being substituted during the expansion.
+
+This allows REDCap data dictionaries to be expressed more compactly and more easily:
+
+* A repeating row or section need only be defined once (e.g. ``sample_1``, ``sample_2`` ...)
+* The templating language can be used to write the branching logic for the repeats
+* Files of included variables can be used to centrally define values that are used multiple times, so they only need to be defined once and can be kept consistent.
+* Tags can be used to produce related databases from the one file or keep parts under development separate.
+
+
+Workflow
+--------
+
+simpleredcapbuilder leaves a few intermediate files that may be useful for
+debugging output or understanding how it works.
+
+* The original, compact file is a CSV or Excel (``.xls`` or ``.xlsx``) file.
+* This is read in, the logical structure of forms / sections / rows parsed and written as a ``.json`` file.
+* This structured is written as a textfile ``.jinja`` with the various tags and repeats rendered in the templating langauge
+* This file is interpreted to render the final result, a standard REDCap data dictionary with the extension ``.expanded.csv``
+
+
+Templating and variable inclusion
+---------------------------------
+
+The templating language available in simpleredcapbuilder (and used to achieve a
+lot of the functionality) is Jinja2. You can do a lot with Jinja2 and are
+referred to its documentation for the full rock-and-roll. In brief:
+
+* Jinja will interpret text within curly braces: ``{ ... }``
+
+* Variables are substituted into double curly braces: ``{{ foo }}``
+
+* Logic and programming constructs are marked with a percent sign: ``{% for item in my_list %}
+
+* Broadly, Jinja looks like a cut-down version of Python.
+
+The builder can import files of values for inclusion in the file. These files of
+"external variables / values" are passed into the template when rendering it.
+Formats accepted are ``.ini`` / config, JSON and YAML. So, if a YAML file
+defined a value like this::
+
+	foo:
+		bar:
+			baz: 3
+
+the compact schema could use the text::
+
+	{{ foo.bar.baz }}
+
+and the expansion would change this to ``3``.
+
+See the ``invars`` files in ``examples``.
+
+
+Repeats
+-------
+
+The ``repeats`` column can be used to signal that the associated row, section or form should be repeated several times. Thus, if you need to complete 7 dates / volumes / names / etc., you don't have to write essentially the same column 7 times.
+
+Repeats can be written in a number of ways:
+
+* ``1-7``
+* ``item: 'A', 'B', 'C'``
+* ``section: 'foo', 'bar', 'baz'``
+* ``form: (1, 'one'), (2, 'two'), (3, 'three')``
+* ``item: 3-4; form: 'low', 'high'``
+
+That is, the repeat element can contain repeats for the adjacent row (item)
+and/or section and/or form. Multiple repeats are separated by semi-colons. Each
+individual repeat expression starts with a qualifier saying whether the repeat
+is for the row, section or form. If no qualifier is given, it is assumed to be
+for the item. This is followed by either a range of numbers, or a sequence of
+values. (The sequence is anything that when enclosed in square braces will look
+like a legal list to Python.)
+
+When this data dictionary is expanded, the associated items will be repeated.
+See the example ``simple-but-useless`` for an illustration.
+
+Obviously, simply repeating a row or section is useless: variable identifiers
+will be repeated, fields will have the same name, etc. The templating langauge
+can be used to get around this. Within any repeat loop, simpleredcapbuilder
+defines a variable: ``i_iter``, ``s_iter`` and ``f_iter`` for item, section and
+form repeats respectively. These will be set to the value for that iteration of
+the loop.
+
+
+For example, a row may have the repeat value of ``item: 1-3`` and the variable
+name of ``sample_{{ i_iter }}`` and the field label of ``Sample number {{ i_iter }}``. These will result in three rows, named and labelled::
+
+	sample_1 ... Sample number 1
+	sample_2 ... Sample number 2
+	sample_3 ... Sample number 3
+
+A section might have the repeat value of ``section: 'alpha', 'beta'`` and the
+variable names and labels written in the compact schema:
+
+	section: 'alpha', 'beta' ... sample{{ s_iter }}_1 ... Sample {{ }} Take 1
+	                             sample{{ s_iter }}_2 ... Sample {{ }} Take 2
+
+Which would result in::
+
+	sample_alpha_1 ... Sample alpha Take 1
+	sample_alpha_2 ... Sample alpha Take 2
+	sample_beta_1 ... Sample beta Take 1
+	sample_beta_2 ... Sample beta Take 2
+
+See the example ``simple-and-useful`` for an illustration.
+
+Repeats can be embedded in each other, e.g. repeating rows in a repeating
+section.
+
+
+Tagging
+-------
+
+Items, sections and forms can be optionally included in an expanded schema by
+the use of tags. Basically, tags allow pieces of the form to be labelled and any
+expansion to selectively include pieces of the form with a given label. The
+'tags' column of the schema follows a similar form to the ``repeat``:
+
+* ``foo``
+* ``item: foo``
+* ``section: foo, bar, baz; form: quux``
+
+That is, the tags element starts with a qualifier saying whether the tag list is
+for the row, section or form. If no qualifier is given, it is assumed to be for
+the item. This is followed by a single word/symbol or a comma separated list of
+words/symbols. Multiple qualifying statements may be separated by a semicolon.
+
+Tags are selected for inclusion with the command line flag ``-i/--include-tags``
+and excluded with ``-x/--exclude-tags``. Multiple tags are selected with
+multiple uses of these flags but include and exclude cannot be used at once..
+The following logic is used for deciding which items are included:
+
+* By default, all items are selected. But if any tags are included (i.e. the ``-i`` flag is used at least once), then only the untagged items and items with the corresponding tag are automatically included. If any tags are excluded (i.e. the ``-x`` flag is used at least once), then all items except those with the corresponding tag are automatically included.
+
+* Inclusion / exclusion covers enclosed items (e.g. an excluded section also excludes the rows within it).
+
+* Having any selected tag will lead to an item being included or excluded - it doesn't need to have all the selected tags.
+
+See the example ``simple-and-tagged`` for an illustration. Note that the ``-n`` flag is useful for labelling the output of selectively tagged schema.
+
+
+
+Various tips
+------------
+
+Excel is handy to use as an input format - you can colour or highlight the
+schema in useful ways - but some caution is required. Format all cells as text
+to avoid strange conversion issues. Also note that Excel strips leading single
+quotes from strings, which is a delightful behaviour, although you can fix this
+with a leading space.
+
+Sometimes you need to repeat a small set of fields that are less than a whole
+section, e.g. a sample date and volume, a person and their affiliation, etc.
+it's possible to use jinja to to produce a "fake" (invisible) section that will
+be repeated. Jinja tags of the form ``{# ... #}`` will produce no output, and
+can thus be used as a section header. So you could title a section ``{#
+fakesection sample-date #}`` and repeat it, without it appearing as a section in
+the output. Note that you still can't have a repeating fake section inside a
+repeating section.
+
+If you want to expand a schema using only the untagged fields, use the '-i'
+flag with a tag that doesn't exist, e.g.::
+
+	% expand-redcap-schema -i dummytag myschema.csv
+
+Note that tags don't have to be quoted like list items in the repeat field. In
+fact, if you do quote them, it would probably be difficult to pass the tag name
+on the command line.
+
+Ini/config files are not nearly as powerful as the other formats for passing in
+external values.
+
+Almost inevitably, after writing this I find that someone else had the same
+thought: https://github.com/chop-dbhi/redcap-repeat. It looks like a much
+simpler and user-friendly solution, albeit not as powerful but suitable for many
+use cases.
+
+
+References
+----------
+
+* `simpleredcapbuilder code repository <https://github.com/agapow/simpleredcapbuilder>`__
+
+* `Jinja2 templating system <http://jinja.pocoo.org/>`__
+
+* `YAML: YAML Ain't Markup Language <http://yaml.org/>`__
+
+* `Python <http://python.org/>`__

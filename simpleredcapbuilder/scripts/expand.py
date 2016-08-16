@@ -51,11 +51,11 @@ def parse_clargs ():
 	)
 
 	aparser.add_argument('-i', '--include-tags', action='append',
-		help='only include untagged sections or those with this tag',
+		help='only include untagged items or those with this tag',
 	)
 
 	aparser.add_argument('-x', '--exclude-tags', action='append',
-		help='exclude sections with this tag',
+		help='exclude items with this tag',
 	)
 
 	aparser.add_argument('-n', '--name', action='store_true',
@@ -83,9 +83,11 @@ def parse_clargs ():
 		if args.name and (args.include_tags or args.exclude_tags):
 			if args.include_tags:
 				stb = 'inc'
+				tag_vars = args.include_tags
 			else:
 				stb = 'exc'
-			ext = '.stb-%s.expanded.csv' % (stb, '-'.join (args.include_tags))
+				tag_vars = args.exclude_tags
+			ext = '.%s-%s.expanded.csv' % (stb, '-'.join (tag_vars))
 		else:
 			ext = '.expanded.csv'
 		args.outfile = args.fileroot + ext
@@ -93,7 +95,7 @@ def parse_clargs ():
 	# just a dummy check on the above logic
 	assert (args.infile != args.outfile), "can't overwrite the input file"
 
-
+	## Return:
 	return args
 
 
@@ -139,7 +141,7 @@ def main ():
 	with open (tmpl_pth, 'rU') as in_hndl:
 		tmpl_data = in_hndl.read()
 	# XXX: need a better way to handle this
-	inc_vars['tags'] = args.include_tags
+	inc_vars['tags'] = args.include_tags or args.exclude_tags
 	exp_tmpl = render_template (tmpl_data, inc_vars)
 	print ("Saving template as data dictionary ...")
 	with open (args.outfile, 'w') as out_hndl:

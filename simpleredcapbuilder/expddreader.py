@@ -107,19 +107,12 @@ class ExpDataDictReader (object):
 			print ("Rec %s has problems with its repeat or tag fields" % rec[Column.variable.value])
 			raise
 		if rec[Column.text_validation_type.value] == 'integer':
-			print ("INT")
-			print (rec[Column.text_validation_min.value])
-			print (rec[Column.text_validation_max.value])
 			min = rec[Column.text_validation_min.value]
 			if min:
 				rec[Column.text_validation_min.value] = str ("%d" % int (min))
 			max = rec[Column.text_validation_max.value]
 			if max:
 				rec[Column.text_validation_max.value] = str ("%d" % int (max))
-			print (rec[Column.text_validation_min.value])
-			print (rec[Column.text_validation_max.value])
-
-
 
 	def parse_metadata_qual (self, md_str):
 		"""
@@ -137,6 +130,8 @@ class ExpDataDictReader (object):
 		for md_st in md_statements:
 			if ':' in md_st:
 				qual, val = [x.strip() for x in md_st.split(':', 1)]
+				if qual == 'row':
+					qual = 'item'
 				assert qual in ('form', 'section', 'item'), \
 					"unrecognised qualifier '%s'" % qual
 			else:

@@ -2,10 +2,17 @@ History & changes
 =================
 
 
+v0.4 (20160815)
+---------------
+
+- added tag exclusion
+- added 'row' as synonym for 'item'
+
+
 v0.3 (20160721)
 ---------------
 
-- added excell parsing
+- added excel parsing
 
 
 v0.2 (2016 June)

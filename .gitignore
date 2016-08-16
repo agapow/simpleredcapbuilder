@@ -4,6 +4,8 @@ __pycache__
 .DS_Store
 *.egg-info
 examples/euclids*
-examples/*.json
 examples/*.jinja
-examples/*expanded.csv
+examples/*.json
+!examples/invars.json
+examples/*.expanded.csv
+*.bak

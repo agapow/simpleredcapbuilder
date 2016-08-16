@@ -104,11 +104,11 @@ class ExpandDbSchema (object):
 		self.end_tags (itm)
 
 	def start_tags (self, item):
-		if item['tags']
+		if item['tags']:
 			if self.inc_tags:
 				self.write ("{%% if are_any_tags_selected (%s, tags) -%%}\n" %
 					item['tags'])
-			if self.exc_tags:
+			elif self.exc_tags:
 				self.write ("{%% if not are_any_tags_selected (%s, tags) -%%}\n" %
 					item['tags'])
 
