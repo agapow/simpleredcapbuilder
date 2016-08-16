@@ -29,9 +29,9 @@ it installs a single script::
 In brief, this produces a standard REDCap data dictionary from a "compact" form.
 This compact dictionary follows the form of the standard but with two additional
 columns: ``repeat`` and ``tags``. These allow rows, sections or forms to be
-repeated or to be optionally included. Next, a templating language can be used
+repeated or to be optionally included. Also, a templating language can be used
 to embed expressions in the compact input, allowing simple logical substitutions
-and text expansions.  in the  Finally, files of external values can be defined
+and text expansions.  Finally, files of external values can be defined
 (e.g. choices, validation types, minimums and maximums) and used in the compact
 dictionary, being substituted during the expansion.
 

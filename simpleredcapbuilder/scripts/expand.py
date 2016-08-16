@@ -43,7 +43,7 @@ def parse_clargs ():
 	import argparse
 	aparser = argparse.ArgumentParser()
 
-	aparser.add_argument ('infile', help='compact REDCap file to be processed')
+	aparser.add_argument ('infile', help='compact REDCap file to be processed, CSV or Excel')
 
 	aparser.add_argument ('-o', "--outfile",
 		help='output expanded redcap data dictionary',

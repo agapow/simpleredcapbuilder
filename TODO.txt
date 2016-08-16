@@ -2,8 +2,8 @@ To do
 =====
 
 * better parsing of tags and repeats
+* rename "item" to "row" for clarity but allow backwards compatibility
 * fake subsections that can appear inside sections but not in the form
 * tags are equal to values, and can be included?
 * vocab filters
 * better template error reporting (esp. unknown identifiers)
-* move documentation to other file

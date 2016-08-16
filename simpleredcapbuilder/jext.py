@@ -10,6 +10,7 @@ import re
 ### CONSTANTS & DEFINES
 
 EXT_DICT = {}
+FILTER_DICT = {}
 
 SPACE_PATT = re.compile ('[]\s\.\-\:\/]+')
 
@@ -25,7 +26,7 @@ def are_any_tags_selected (local_tags, selected_tags):
 EXT_DICT['are_any_tags_selected'] = are_any_tags_selected
 
 
-def strs_to_choices (delim_str):
+def delim_str_to_choices (delim_str):
 	"""
 	Take a comma delimited string and convert it to a REDCap vocab string.
 
@@ -33,6 +34,18 @@ def strs_to_choices (delim_str):
 	"""
 	# split source string
 	str_list = [s.strip() for s in delim_str.split (',')]
+
+	## Return:
+	return str_list_to_choices (str_list)
+
+FILTER_DICT['delim_str_to_choices'] = delim_str_to_choices
+
+
+def str_list_to_choices (str_list):
+	"""
+	Take a list of strings and convert it to a REDCap vocab string.
+
+	"""
 
 	# derive value string and format label
 	choice_prs = []
@@ -50,6 +63,7 @@ def strs_to_choices (delim_str):
 	## Return:
 	return vocab_str
 
+FILTER_DICT['str_list_to_choices'] = str_list_to_choices
 
 
 ### END ###
