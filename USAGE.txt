@@ -66,7 +66,7 @@ referred to its documentation for the full rock-and-roll. In brief:
 
 * Variables are substituted into double curly braces: ``{{ foo }}``
 
-* Logic and programming constructs are marked with a percent sign: ``{% for item in my_list %}
+* Logic and programming constructs are marked with a percent sign: ``{% for item in my_list %}``
 
 * Broadly, Jinja looks like a cut-down version of Python.
 
@@ -85,7 +85,13 @@ the compact schema could use the text::
 
 and the expansion would change this to ``3``.
 
-See the ``invars`` files in ``examples``.
+See ``examples/invars`` files for examples.
+
+Templating can be used for a lot of clever things. simpleredcapbuilder provides two filter functions that can build reasonable choice lists from a delimited string or from a list:
+
+* ``{{ "yes, no, unknown" | delim_str_to_choices }}``
+
+* ``{{ included_vars.yes_no_list | str_list_to_choices }}``
 
 
 Repeats
