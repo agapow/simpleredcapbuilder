@@ -43,6 +43,7 @@ def parse_clargs ():
 	import argparse
 	aparser = argparse.ArgumentParser()
 
+	# infile and outfile naming
 	aparser.add_argument ('infile', help='compact REDCap file to be processed, CSV or Excel')
 
 	aparser.add_argument ('-o', "--outfile",
@@ -50,29 +51,36 @@ def parse_clargs ():
 		default=None,
 	)
 
-	aparser.add_argument('-i', '--include-tags', action='append',
-		help='only include untagged items or those with this tag',
-	)
-
-	aparser.add_argument('-x', '--exclude-tags', action='append',
-		help='exclude items with this tag',
-	)
-
 	aparser.add_argument('-n', '--name', action='store_true',
 		help='name the output file for the tags passed in',
 		default=False,
 	)
 
+	# tag handling
+	tags_grp = aparser.add_mutually_exclusive_group()
+	tags_grp.add_argument('-i', '--include-tags', action='append',
+		help='only include untagged items or those with this tag',
+	)
+	tags_grp.add_argument('-x', '--exclude-tags', action='append',
+		help='exclude items with this tag',
+	)
+
+	# include external vars
 	aparser.add_argument ('-v', "--include-vars",
 		help='include external file of variables',
 		default=None,
 	)
 
-	args = aparser.parse_args()
+	# allow / check for external cols
+	extracols_grp = aparser.add_mutually_exclusive_group()
+	extracols_grp.add_argument ('--extra-cols', dest='extra_cols',
+		action='store_true')
+	extracols_grp.add_argument ('--no-extra-cols', dest='extra_cols',
+		action='store_false')
+	aparser.set_defaults (extra_cols=True)
 
-	# can't both include and exclude tags
-	assert not (args.include_tags and args.exclude_tags), \
-		"cannot have both included and excluded tags"
+	# Parsing
+	args = aparser.parse_args()
 
 	# find the root file name, for naming intermediate files
 	filename, file_ext = os.path.splitext (args.infile)
@@ -113,7 +121,7 @@ def main ():
 	# read in compact dd and parse out structure
 	print ("Parsing & validating input file ...")
 	rdr = ExpDataDictReader()
-	exp_dd_struct = rdr.parse (args.infile)
+	exp_dd_struct = rdr.parse (args.infile, extra_cols=args.extra_cols)
 
 	# read in compact dd and parse out structure
 	if args.include_vars:

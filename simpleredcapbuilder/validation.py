@@ -80,6 +80,13 @@ def check_choices (rec):
 					complain (rec, "malformed choice string '%s'" % cp)
 
 
+def check_field_val (rec, col, allowed_vals):
+   val = rec[col.value]
+   if val not in allowed_vals:
+      complain (rec, "unrecognised value '%s' for field '%s'" % (val,
+         col.value))
+
+
 class PostValidator (object):
    def __init__ (self):
       self.field_ids = []
@@ -91,6 +98,14 @@ class PostValidator (object):
    def check_rec (self, rec):
       # check id right length
       check_id_length (rec)
+
+      # check various fields have correct values
+      check_field_val (consts.Column.field_type, consts.ALLOWED_FTYPE_VALS)
+      check_field_val (consts.Column.text_validation_type,
+         consts.ALLOWED_VALIDATION_VALS)
+      check_field_val (consts.Column.identifier, consts.ALLOWED_IDENTIFIER_VALS)
+      check_field_val (consts.Column.required_field,
+         consts.ALLOWED_REQUIRED_VALS)
 
       # check bl vars are proper
       var_name = rec[COL.variable.value]

@@ -41,6 +41,7 @@ class FileType (Enum):
 class Column (Enum):
 	tags = 'tags'
 	repeat = 'repeat'
+	subsection = 'subsection'
 
 	variable = 'Variable / Field Name'
 	form_name = 'Form Name'
@@ -64,8 +65,8 @@ class Column (Enum):
 ALL_COLS = [x for x in Column]
 ALL_NAMES = [x.value for x in ALL_COLS]
 
-META_COLS = ALL_COLS[:2]
-OUTPUT_COLS = ALL_COLS[2:]
+META_COLS = ALL_COLS[:3]
+OUTPUT_COLS = ALL_COLS[3:]
 
 MANDATORY_COLS = (getattr (Column, x) for x in ['variable', 'form_name',
 	'field_type', 'field_label'])
@@ -75,8 +76,56 @@ MANDATORY_COLS = (getattr (Column, x) for x in ['variable', 'form_name',
 class SchemaItem (Enum):
 	form = 'form'
 	section = 'section'
-	item = 'item'
+	subsection = 'subsection'
+	row = 'row'
 
+
+ALLOWED_FTYPE_VALS = [
+	'calc',
+	'checkbox',
+	'description',
+	'dropdown',
+	'file',
+	'notes',
+	'radio',
+	'slider',
+	'sql',
+	'text',
+	'truefalse',
+	'yesno',
+]
+
+ALLOWED_VALIDATION_VALS = [
+	'date',
+	'date_dmy',
+	'date_mdy',
+	'date_ymd',
+	'datetime_dmy',
+	'datetime_mdy',
+	'datetime_seconds_dmy',
+	'datetime_seconds_mdy',
+	'datetime_seconds_ymd',
+	'datetime_ymd',
+	'email',
+	'integer',
+	'number',
+	'number_1dp',
+	'number_2dp',
+	'phone',
+	'time',
+	'zipcode',
+	'',
+]
+
+ALLOWED_IDENTIFIER_VALS = [
+	'Y',
+	'',
+]
+
+ALLOWED_REQUIRED_VALS = [
+	'Y',
+	'',
+]
 
 
 ### END ###

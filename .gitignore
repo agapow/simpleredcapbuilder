@@ -8,4 +8,4 @@ examples/*.jinja
 examples/*.json
 !examples/invars.json
 examples/*.expanded.csv
-*.bak
+~*

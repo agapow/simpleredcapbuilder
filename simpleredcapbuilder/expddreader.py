@@ -31,7 +31,7 @@ import os
 from ast import literal_eval as leval
 
 from . import consts
-from .consts import Column, ALL_NAMES
+from .consts import Column, ALL_NAMES, MANDATORY_COLS
 from .validation import pre_validate
 
 __ALL__ = [
@@ -88,17 +88,36 @@ class ExpDataDictReader (object):
 			# return
 			return (fieldnames, recs)
 
-	def parse (self, in_pth):
+	def parse (self, in_pth, extra_cols=True):
 		fieldnames, recs = self.read_file (in_pth)
-		for in_fld in fieldnames:
-			assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
+
+		# if extra columns not allowed, check they aren't there
+		if not extra_cols:
+			for in_fld in fieldnames:
+				assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
+
+		# check required cols are there
+		for c in MANDATORY_COLS:
+			assert c.value in fieldnames, "missing required column '%s'" % c.value
+
+		# parse out structured fields
 		proc_recs = [self.pre_process (r) for r in recs]
+
+		## Return:
 		return self.parse_all_recs (proc_recs)
 
 	def pre_process (self, rec):
 		"""
-		Parse out the additional fields in each record.
+		Clean flanking whitespace, ensure rec has all fields and parse out structured new fields.
 		"""
+		# make sure that every field is in the record
+		for f in consts.ALL_NAMES:
+			if rec.haskey (f):
+				rec[f] = rec[f].strip()
+			else:
+				rec[f] = ''
+
+		# now parse out the structured / metadata fields
 		try:
 			rec['tags'] = self.parse_tags_str (rec.get ('tags', ''))
 			rec['repeat'] = self.parse_repeat_str (rec.get ('repeat', ''))
@@ -116,7 +135,7 @@ class ExpDataDictReader (object):
 
 	def parse_metadata_qual (self, md_str):
 		"""
-		Extract the form / section / item qualifier off record str
+		Extract the form / section / etc. qualifier off record str
 		"""
 		if ';' in md_str:
 			# multiple metadata statements
@@ -126,11 +145,11 @@ class ExpDataDictReader (object):
 			md_statements = [md_str.strip()]
 
 		# now parse statements
-		md_dict = {'form': [], 'section': [], 'row': []}
+		md_dict = {'form': [], 'section': [], 'subsection': [], 'row': []}
 		for md_st in md_statements:
 			if ':' in md_st:
 				qual, val = [x.strip() for x in md_st.split(':', 1)]
-				assert qual in ('form', 'section', 'row'), \
+				assert qual in ('form', 'section', 'subsection', 'row'), \
 					"unrecognised qualifier '%s'" % qual
 			else:
 				qual = 'row'
@@ -146,7 +165,7 @@ class ExpDataDictReader (object):
 		Parse out the 'tags' field in each record.
 		"""
 		if not s:
-			return {'form': [], 'section': [], 'row': []}
+			return {'form': [], 'section': [], 'subsection': [], 'row': []}
 		else:
 			md_dict = self.parse_metadata_qual (s)
 			for k, v in list (md_dict.items()):
@@ -159,7 +178,7 @@ class ExpDataDictReader (object):
 		Parse out the 'repeat' field in each record.
 		"""
 		if not s:
-			return {'form': [], 'section': [], 'row': []}
+			return {'form': [], 'section': [], 'subsection': [], 'row': []}
 		else:
 			md_dict = self.parse_metadata_qual (s)
 			for k, v in list (md_dict.items()):
@@ -203,6 +222,7 @@ class ExpDataDictReader (object):
 				i += 1
 			all_forms.append (self.parse_form_recs (recs[start:i]))
 
+		## Return:
 		return all_forms
 
 	def parse_form_recs (self, recs):
@@ -230,6 +250,7 @@ class ExpDataDictReader (object):
 				i += 1
 			form_rec['contents'].append (self.parse_section_recs (recs[start:i]))
 
+		## Return:
 		return form_rec
 
 	def parse_section_recs (self, recs):
@@ -242,15 +263,18 @@ class ExpDataDictReader (object):
 		}
 
 		for r in recs:
-			section_rec['contents'].append (self.parse_item_rec (r))
+			section_rec['contents'].append (self.parse_row_rec (r))
 
+		## Return:
 		return section_rec
 
-	def parse_item_rec (self, rec):
+	def parse_row_rec (self, rec):
 		rec['type'] = 'row'
 		rec['repeat'] = rec['repeat']['row']
 		rec['tags'] = rec['tags']['row']
 		pre_validate (rec)
+
+		## Return:
 		return rec
 
 
