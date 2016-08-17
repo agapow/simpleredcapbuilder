@@ -73,10 +73,12 @@ def parse_clargs ():
 
 	# allow / check for external cols
 	extracols_grp = aparser.add_mutually_exclusive_group()
-	extracols_grp.add_argument ('--extra-cols', dest='extra_cols',
-		action='store_true')
-	extracols_grp.add_argument ('--no-extra-cols', dest='extra_cols',
-		action='store_false')
+	extracols_grp.add_argument ('--extra-cols',
+		help='allow extra columns in the input',
+		dest='extra_cols', action='store_true')
+	extracols_grp.add_argument ('--no-extra-cols',
+		help="don't allow any extra columns in the input",
+		dest='extra_cols', action='store_false')
 	aparser.set_defaults (extra_cols=True)
 
 	# Parsing

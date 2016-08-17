@@ -7,6 +7,14 @@ v0.5 (20160818)
 
 - a major and breaking change: for clarity, individual fields are now called 'rows' instead of 'items' and their iterator is 'r_iter' instead of 'i_iter'
 
+- extra columns are now explicitly allowed but can be disallowed
+
+- now checks for required columns in the input
+
+- this will now work with missing, non-required columns (e.g. matrix)
+
+- we now check for the correct types in the type, validation, identifier and required columns.
+
 
 v0.4.1 (20160817)
 ---------------

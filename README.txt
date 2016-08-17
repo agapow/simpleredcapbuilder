@@ -28,30 +28,55 @@ This allows REDCap data dictionaries to be expressed more compactly and more eas
 * Files of included variables can be used to centrally define values that are used multiple times, so they only need to be defined once and can be kept consistent.
 * Tags can be used to produce related databases from the one file or keep parts under development separate.
 
+There are a number of other minor features:
+
+* Extra columns (e.g. for notes or annotations) can be included in the input, but can also be explicitly disallowed
+
+* Conversely, not all columns have to be defined or included in the input if they are not being used (e.g. matrix columns)
+
+* The required columns (the name, label, form and type) are checked on input.
+
+* The values in the type, validation, identifier and required columns are checked in the generated output.
+
+
+- a major and breaking change: for clarity, individual fields are now called 'rows' instead of 'items' and their iterator is 'r_iter' instead of 'i_iter'
+
+- extra columns are now explicitly allowed but can be disallowed
+
+- now checks for required columns in the input
+
+- this will now work with missing, non-required columns (e.g. matrix)
+
+- we now check for the correct types in the type, validation, identifier and required columns.
+
+
 
 Using simpleredcapbuilder
 -------------------------
 
 simpleredcapbuilder installs a single script, that is called::
 
-	expand-redcap-schema [-h] [-o OUTFILE] [-i INCLUDE_TAGS]
-									[-x EXCLUDE_TAGS] [-n] [-v INCLUDE_VARS]
-									infile
+	usage: expand-redcap-schema [-h] [-o OUTFILE] [-n]
+	                            [-i INCLUDE_TAGS | -x EXCLUDE_TAGS]
+	                            [-v INCLUDE_VARS] [--extra-cols | --no-extra-cols]
+	                            infile
 
 	positional arguments:
-	  infile                compact REDCap file to be processed
+	  infile                compact REDCap file to be processed, CSV or Excel
 
 	optional arguments:
 	  -h, --help            show this help message and exit
 	  -o OUTFILE, --outfile OUTFILE
-									output expanded redcap data dictionary
-	  -i INCLUDE_TAGS, --include-tags INCLUDE_TAGS
-									only include untagged sections or those with this tag
-	  -x EXCLUDE_TAGS, --exclude-tags EXCLUDE_TAGS
-									exclude sections with this tag
+	                        output expanded redcap data dictionary
 	  -n, --name            name the output file for the tags passed in
+	  -i INCLUDE_TAGS, --include-tags INCLUDE_TAGS
+	                        only include untagged items or those with this tag
+	  -x EXCLUDE_TAGS, --exclude-tags EXCLUDE_TAGS
+	                        exclude items with this tag
 	  -v INCLUDE_VARS, --include-vars INCLUDE_VARS
-									include external file of variables
+	                        include external file of variables
+	  --extra-cols          allow extra columns in the input
+	  --no-extra-cols       don't allow any extra columns in the input
 
 The file ``USAGE.txt`` includes more detailed instructions and examples can be
 found in the ``examples`` dir.
