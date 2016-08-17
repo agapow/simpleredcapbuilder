@@ -2,6 +2,18 @@ History & changes
 =================
 
 
+v0.5 (20160818)
+---------------
+
+- a major and breaking change: for clarity, individual fields are now called 'rows' instead of 'items' and their iterator is 'r_iter' instead of 'i_iter'
+
+
+v0.4.1 (20160817)
+---------------
+
+- made the choice filters more "opinionated", trimming bracketed sections, taking explicit value-label pairs, better error checking, trimming more whitespace
+
+
 v0.4 (20160815)
 ---------------
 

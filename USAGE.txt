@@ -102,16 +102,16 @@ The ``repeats`` column can be used to signal that the associated row, section or
 Repeats can be written in a number of ways:
 
 * ``1-7``
-* ``item: 'A', 'B', 'C'``
+* ``row: 'A', 'B', 'C'``
 * ``section: 'foo', 'bar', 'baz'``
 * ``form: (1, 'one'), (2, 'two'), (3, 'three')``
-* ``item: 3-4; form: 'low', 'high'``
+* ``row: 3-4; form: 'low', 'high'``
 
-That is, the repeat element can contain repeats for the adjacent row (item)
+That is, the repeat element can contain repeats for the adjacent row (field)
 and/or section and/or form. Multiple repeats are separated by semi-colons. Each
 individual repeat expression starts with a qualifier saying whether the repeat
 is for the row, section or form. If no qualifier is given, it is assumed to be
-for the item. This is followed by either a range of numbers, or a sequence of
+for the row. This is followed by either a range of numbers, or a sequence of
 values. (The sequence is anything that when enclosed in square braces will look
 like a legal list to Python.)
 
@@ -121,13 +121,12 @@ See the example ``simple-but-useless`` for an illustration.
 Obviously, simply repeating a row or section is useless: variable identifiers
 will be repeated, fields will have the same name, etc. The templating langauge
 can be used to get around this. Within any repeat loop, simpleredcapbuilder
-defines a variable: ``i_iter``, ``s_iter`` and ``f_iter`` for item, section and
+defines a variable: ``r_iter``, ``s_iter`` and ``f_iter`` for row, section and
 form repeats respectively. These will be set to the value for that iteration of
 the loop.
 
-
-For example, a row may have the repeat value of ``item: 1-3`` and the variable
-name of ``sample_{{ i_iter }}`` and the field label of ``Sample number {{ i_iter }}``. These will result in three rows, named and labelled::
+For example, a row may have the repeat value of ``row: 1-3`` and the variable
+name of ``sample_{{ r_iter }}`` and the field label of ``Sample number {{ r_iter }}``. These will result in three rows, named and labelled::
 
 	sample_1 ... Sample number 1
 	sample_2 ... Sample number 2
@@ -155,18 +154,18 @@ section.
 Tagging
 -------
 
-Items, sections and forms can be optionally included in an expanded schema by
+Rows, sections and forms can be optionally included in an expanded schema by
 the use of tags. Basically, tags allow pieces of the form to be labelled and any
 expansion to selectively include pieces of the form with a given label. The
 'tags' column of the schema follows a similar form to the ``repeat``:
 
 * ``foo``
-* ``item: foo``
+* ``row: foo``
 * ``section: foo, bar, baz; form: quux``
 
 That is, the tags element starts with a qualifier saying whether the tag list is
 for the row, section or form. If no qualifier is given, it is assumed to be for
-the item. This is followed by a single word/symbol or a comma separated list of
+the row. This is followed by a single word/symbol or a comma separated list of
 words/symbols. Multiple qualifying statements may be separated by a semicolon.
 
 Tags are selected for inclusion with the command line flag ``-i/--include-tags``
@@ -213,6 +212,10 @@ on the command line.
 
 Ini/config files are not nearly as powerful as the other formats for passing in
 external values.
+
+Earlier versions of simpleredcapbuilder used the word 'item' to mean 'row' and
+'i_iter' instead of 'r_iter' in the template language. This was changed to avoid
+ambiguity.
 
 Almost inevitably, after writing this I find that someone else had the same
 thought: https://github.com/chop-dbhi/redcap-repeat. It looks like a much

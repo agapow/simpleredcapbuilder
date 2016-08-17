@@ -126,16 +126,14 @@ class ExpDataDictReader (object):
 			md_statements = [md_str.strip()]
 
 		# now parse statements
-		md_dict = {'form': [], 'section': [], 'item': []}
+		md_dict = {'form': [], 'section': [], 'row': []}
 		for md_st in md_statements:
 			if ':' in md_st:
 				qual, val = [x.strip() for x in md_st.split(':', 1)]
-				if qual == 'row':
-					qual = 'item'
-				assert qual in ('form', 'section', 'item'), \
+				assert qual in ('form', 'section', 'row'), \
 					"unrecognised qualifier '%s'" % qual
 			else:
-				qual = 'item'
+				qual = 'row'
 				val = md_st.strip()
 			assert not md_dict[qual], \
 				"multiple statements for '%s' in '%s'" % (qual, md_statements)
@@ -148,7 +146,7 @@ class ExpDataDictReader (object):
 		Parse out the 'tags' field in each record.
 		"""
 		if not s:
-			return {'form': [], 'section': [], 'item': []}
+			return {'form': [], 'section': [], 'row': []}
 		else:
 			md_dict = self.parse_metadata_qual (s)
 			for k, v in list (md_dict.items()):
@@ -161,7 +159,7 @@ class ExpDataDictReader (object):
 		Parse out the 'repeat' field in each record.
 		"""
 		if not s:
-			return {'form': [], 'section': [], 'item': []}
+			return {'form': [], 'section': [], 'row': []}
 		else:
 			md_dict = self.parse_metadata_qual (s)
 			for k, v in list (md_dict.items()):
@@ -249,9 +247,9 @@ class ExpDataDictReader (object):
 		return section_rec
 
 	def parse_item_rec (self, rec):
-		rec['type'] = 'item'
-		rec['repeat'] = rec['repeat']['item']
-		rec['tags'] = rec['tags']['item']
+		rec['type'] = 'row'
+		rec['repeat'] = rec['repeat']['row']
+		rec['tags'] = rec['tags']['row']
 		pre_validate (rec)
 		return rec
 

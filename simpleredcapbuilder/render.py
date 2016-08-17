@@ -63,7 +63,7 @@ class ExpandDbSchema (object):
 
 		for x in f['contents']:
 			dtype = x.get ('type', None)
-			if dtype  == 'item':
+			if dtype  == 'row':
 				self.expand_item (x)
 			elif dtype  == 'section':
 				self.expand_section (x)
@@ -83,7 +83,7 @@ class ExpandDbSchema (object):
 			self.write ("{%% for s_iter in %s -%%}\n" % s['repeat'])
 
 		for x in s['contents']:
-			assert x['type'] == 'item', "expected item but got '%s'" % x['type']
+			assert x['type'] == 'row', "expected row but got '%s'" % x['type']
 			self.expand_item (x)
 
 		if s['repeat']:
@@ -91,11 +91,11 @@ class ExpandDbSchema (object):
 		self.end_tags (s)
 
 	def expand_item (self, itm):
-		assert itm['type'] == 'item', "expected item but got '%s'" % itm['type']
+		assert itm['type'] == 'row', "expected row but got '%s'" % itm['type']
 
 		self.start_tags (itm)
 		if itm['repeat']:
-			self.write ("{%% for i_iter in %s -%%}\n" % itm['repeat'])
+			self.write ("{%% for r_iter in %s -%%}\n" % itm['repeat'])
 
 		self.csv_writer.writerow (itm)
 
