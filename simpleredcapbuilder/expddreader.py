@@ -236,19 +236,26 @@ class ExpDataDictReader (object):
 		num_recs = len (recs)
 		i = 0
 
-		# read initial no-section items
-		while (i < num_recs) and (not recs[i][consts.Column.section_header.value]):
+		# read initial no-section / no-subsection items
+		while (i < num_recs) and not (
+			recs[i][consts.Column.section_header.value] or
+			recs[i][consts.Column.subsection.value]
+		):
 			form_rec['contents'].append (self.parse_item_rec (recs[i]))
 			i += 1
 
-		# now the sectioned part of the form
-		while (i < num_recs):
-			# start a new section
-			start = i
-			i += 1
-			while (i < num_recs) and (not recs[i][consts.Column.section_header.value]):
+		if recs[i][consts.Column.section_header.value]:
+			# starting a section
+			while (i < num_recs):
+				# start a new section
+				start = i
 				i += 1
-			form_rec['contents'].append (self.parse_section_recs (recs[start:i]))
+				while (i < num_recs) and (not recs[i][consts.Column.section_header.value]):
+					i += 1
+				form_rec['contents'].append (self.parse_section_recs (recs[start:i]))
+		elif recs[i][consts.Column.subsection.value]:
+			# starting a subsection
+			pass
 
 		## Return:
 		return form_rec
