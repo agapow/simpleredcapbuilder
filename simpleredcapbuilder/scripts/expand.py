@@ -24,18 +24,10 @@ from simpleredcapbuilder import ExpandDbSchema, render_template
 from simpleredcapbuilder import consts
 from simpleredcapbuilder import PostValidator
 from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
-
+from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
+from simpleredcapbuild.utils import pprint
 
 ### CODE ###
-
-### UTILS
-
-import pprint
-pp = pprint.PrettyPrinter (indent=2)
-
-def pprint (x):
-	pp.pprint (x)
-
 
 ### MAIN
 

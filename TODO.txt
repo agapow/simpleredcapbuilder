@@ -5,5 +5,5 @@ To do
 * rename "item" to "row" for clarity but allow backwards compatibility
 * fake subsections that can appear inside sections but not in the form
 * tags are equal to values, and can be included?
-* vocab filters
 * better template error reporting (esp. unknown identifiers)
+* Embed post-validation in the final output / expansion stage

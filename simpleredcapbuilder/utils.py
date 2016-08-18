@@ -17,13 +17,13 @@ __all__ = [
 
 ### CONSTANTS & DEFINES
 
-_pp = pprint.PrettyPrinter (indent=2)
+_PP = pprint.PrettyPrinter (indent=2)
 
 
 ### CODE ###
 
 def pprint (x):
-	_pp.pprint (x)
+	_PP.pprint (x)
 
 
 def progress (msg):

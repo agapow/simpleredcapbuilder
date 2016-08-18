@@ -192,8 +192,11 @@ Other features
 
 * Conversely, not all columns have to be defined or included in the input if they are not being used (e.g. matrix columns). A valid expanded schema that includes these will still be generated. However, the name, label, form and type columns must be included in the input and are actually checked for.
 
+* Output records are checked to see that they have a value for the minimal sets of fields (form name, identifier, type and label).
+
 * The values in the type, validation, identifier and required columns are checked in the generated output, to see they are one of the accepted values.
 
+* The output is also checked is see that form names run consecutively (i.e. form names are unique and occur in 'runs') and that subsections fall completely within forms and sections (i.e. don't "straddle" two or more forms / sections).
 
 Various tips
 ------------

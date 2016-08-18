@@ -32,7 +32,7 @@ from ast import literal_eval as leval
 
 from . import consts
 from .consts import Column, ALL_NAMES, MANDATORY_COLS
-from .validation import pre_validate
+from .validation import PreValidator
 
 __ALL__ = [
 	'ExpDataDictReader',
@@ -51,6 +51,29 @@ def pprint (x):
 
 
 class ExpDataDictReader (object):
+
+	def parse (self, in_pth, extra_cols=True):
+		fieldnames, recs = self.read_file (in_pth)
+
+		# a bit of pre-pre-validation before pre-processing ...
+		# ... if extra columns not allowed, check they aren't there
+		if not extra_cols:
+			for in_fld in fieldnames:
+				assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
+
+		# ... and check required cols are there
+		for c in MANDATORY_COLS:
+			assert c.value in fieldnames, "missing required column '%s'" % c.value
+
+		# parse out structured fields
+		proc_recs = [self.pre_process (r) for r in recs]
+
+		# now prevalidate
+		pvalidator = validation.PreValidator()
+		pvalidator.check (proc_recs)
+
+		## Return:
+		return self.parse_all_recs (proc_recs)
 
 	def read_file (self, in_pth):
 		filetype = consts.FileType.from_path (in_pth)
@@ -88,29 +111,11 @@ class ExpDataDictReader (object):
 			# return
 			return (fieldnames, recs)
 
-	def parse (self, in_pth, extra_cols=True):
-		fieldnames, recs = self.read_file (in_pth)
-
-		# if extra columns not allowed, check they aren't there
-		if not extra_cols:
-			for in_fld in fieldnames:
-				assert in_fld in ALL_NAMES, "unrecognised input column '%s'" % in_fld
-
-		# check required cols are there
-		for c in MANDATORY_COLS:
-			assert c.value in fieldnames, "missing required column '%s'" % c.value
-
-		# parse out structured fields
-		proc_recs = [self.pre_process (r) for r in recs]
-
-		## Return:
-		return self.parse_all_recs (proc_recs)
-
 	def pre_process (self, rec):
 		"""
 		Clean flanking whitespace, ensure rec has all fields and parse out structured new fields.
 		"""
-		# make sure that every field is in the record
+		# make sure that every field in the record & strip flanking wspace
 		for f in consts.ALL_NAMES:
 			if rec.haskey (f):
 				rec[f] = rec[f].strip()
@@ -279,7 +284,6 @@ class ExpDataDictReader (object):
 		rec['type'] = 'row'
 		rec['repeat'] = rec['repeat']['row']
 		rec['tags'] = rec['tags']['row']
-		pre_validate (rec)
 
 		## Return:
 		return rec
