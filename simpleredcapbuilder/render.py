@@ -124,8 +124,8 @@ class AlertUndefined (Undefined):
 	When an undefined var found, give alert but keep going
 	'''
 	def _fail_with_undefined_error (self, *args, **kwargs):
-		utils.warn ('JINJA2: something was undefined!')
-		print (dir (self))
+		utils.warn ("undefined or error in template script '%s / %s / %s" % \
+			(self._undefined_name, self._undefined_hint, self._undefined_obj))
 		return None
 
 

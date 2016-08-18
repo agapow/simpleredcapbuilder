@@ -15,6 +15,8 @@ import re
 
 from .consts import Column as COL
 from . import utils
+from . import consts
+
 
 __all__ = [
 	'PreValidator',
@@ -60,31 +62,35 @@ def check_id_length (rec):
 		error_rec (rec, "variable identifier is too long")
 
 
-def check_required_fields (rec)
+def check_required_fields (rec):
 	for col in consts.MANDATORY_COLS:
 		col_name = col.value
 		if not rec[col_name].strip():
 			error_rec (rec, "missing required field '%s'" % col_name)
 
 
-def check_needs_choices (rec):
+def check_needs_choices (rec, check_comp=False):
 	"""
 	If this is a field that needs choices, see that it has them.
 
+	Arguments:
+		rec: the record to be checked.
+		check_comp (bool): check that non-choice items don't have choices
+
 	"""
-	if rec[COL.field_type.value] in ('radio', 'checkbox', 'dropdown'):
+	if rec[COL.field_type.value] in ('radio', 'checkbox', 'dropdown', 'calc'):
 		if not rec[COL.choices_calculations.value].strip():
-			warn_rec (rec, "radio / checkbox / dropdown has no choices")
+			warn_rec (rec, "choice / calculated field has no choices")
 		if rec[COL.text_validation_type.value].strip():
-			warn_rec (rec, "radio / checkbox / dropdown has text validation")
+			warn_rec (rec, "choice / calculated field has text validation")
 		if rec[COL.text_validation_min.value].strip():
-			warn_rec (rec, "radio / checkbox / dropdown has text min")
+			warn_rec (rec, "choice / calculated field has text min")
 		if rec[COL.text_validation_max.value].strip():
-			warn_rec (rec, "radio / checkbox / dropdown has text max")
-	else:
-		if rec[COL.text_validation_type.value] not in ('number', 'integer'):
-			if rec[COL.choices_calculations.value].strip():
-				warn_rec (rec, "non-radio / checkbox / dropdown / numeric has choices or calculation")
+			warn_rec (rec, "choice / calculated field has text max")
+	elif check_comp:
+		# if rec[COL.text_validation_type.value] not in ('number', 'integer'):
+			if rec[COL.choices_calculations.value]:
+				warn_rec (rec, "non-choice / calculated field has choices or calculation")
 
 
 def check_dates_and_times (rec):
@@ -99,7 +105,7 @@ def check_dates_and_times (rec):
 
 	if ('time' in rec[COL.field_label.value].lower()) or ('time' in rec[COL.variable.value].lower()):
 		if 'time' not in rec[COL.text_validation_type.value]:
-			warn_rec (rec, "looks like time but has no date validator")
+			warn_rec (rec, "looks like time but has no time validator")
 
 
 def check_choices (rec):
@@ -151,10 +157,15 @@ class PreValidator (object):
 		source.
 
 		"""
-		check_id_length (rec)
+		self.check_id_length (rec)
 		check_dates_and_times (rec)
-		check_needs_choices (rec)
-		check_choices (rec)
+		check_needs_choices (rec, check_comp=False)
+
+	def check_id_length (self, rec):
+		variable = rec[COL.variable.value]
+		if 26 < len (variable):
+			warn_rec (rec, "final variable identifier maybe too long")
+
 
 	def check_subsections (self, recs):
 		"""
@@ -252,12 +263,17 @@ class PostValidator (object):
 		self.check_form_name (rec)
 
 		# check various fields have correct values
-		check_field_val (consts.Column.field_type, consts.ALLOWED_FTYPE_VALS)
-		check_field_val (consts.Column.text_validation_type,
+		check_field_val (rec, consts.Column.field_type,
+			consts.ALLOWED_FTYPE_VALS)
+		check_field_val (rec, consts.Column.text_validation_type,
 			consts.ALLOWED_VALIDATION_VALS)
-		check_field_val (consts.Column.identifier, consts.ALLOWED_IDENTIFIER_VALS)
-		check_field_val (consts.Column.required_field,
+		check_field_val (rec, consts.Column.identifier,
+			consts.ALLOWED_IDENTIFIER_VALS)
+		check_field_val (rec, consts.Column.required_field,
 			consts.ALLOWED_REQUIRED_VALS)
+
+		check_needs_choices (rec, check_comp=False)
+		check_choices (rec)
 
 		# check bl vars are proper
 		var_name = rec[COL.variable.value]

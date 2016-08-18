@@ -25,7 +25,7 @@ from simpleredcapbuilder import consts
 from simpleredcapbuilder import PostValidator
 from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
 from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
-from simpleredcapbuild.utils import pprint
+from simpleredcapbuilder.utils import pprint
 
 ### CODE ###
 

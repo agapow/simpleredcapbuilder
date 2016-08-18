@@ -33,6 +33,7 @@ from ast import literal_eval as leval
 from . import consts
 from .consts import Column, ALL_NAMES, MANDATORY_COLS
 from .validation import PreValidator
+from . import utils
 
 __ALL__ = [
 	'ExpDataDictReader',
@@ -69,7 +70,7 @@ class ExpDataDictReader (object):
 		proc_recs = [self.pre_process (r) for r in recs]
 
 		# now prevalidate
-		pvalidator = validation.PreValidator()
+		pvalidator = PreValidator()
 		pvalidator.check (proc_recs)
 
 		## Return:
@@ -117,8 +118,8 @@ class ExpDataDictReader (object):
 		"""
 		# make sure that every field in the record & strip flanking wspace
 		for f in consts.ALL_NAMES:
-			if rec.haskey (f):
-				rec[f] = rec[f].strip()
+			if f in rec.keys():
+				rec[f] = str (rec[f]).strip()
 			else:
 				rec[f] = ''
 
@@ -205,7 +206,7 @@ class ExpDataDictReader (object):
 
 				md_dict[k] = rpt_list
 
-			assert len (md_dict) == 3, "bad dict %s" % md_dict
+			assert len (md_dict) == 4, "bad dict %s" % md_dict
 			return md_dict
 
 
@@ -216,51 +217,82 @@ class ExpDataDictReader (object):
 		"""
 		all_forms = []
 
-		num_recs = len (recs)
+		curr_form = None
+		curr_form_recs = []
+		for r in recs:
+			new_form = r[consts.Column.form_name.value]
+			if curr_form:
+				# if already processing a form
 
-		i = 0
-		while i < num_recs:
-			start = i
-			form_name = recs[i][consts.Column.form_name.value]
-			i += 1
-			while (i < num_recs) and (recs[i][consts.Column.form_name.value] == form_name):
-				i += 1
-			all_forms.append (self.parse_form_recs (recs[start:i]))
+				if curr_form == new_form:
+					# if continuing new form
+					curr_form_recs.append (r)
+
+				else:
+					# if starting new form
+					all_forms.append (self.parse_form_recs (curr_form_recs))
+					curr_form = new_form
+					curr_form_recs = [r]
+
+			else:
+				# if it's the first record
+				curr_form = new_form
+				curr_form_recs = [r]
+
+		all_forms.append (self.parse_form_recs (curr_form_recs))
 
 		## Return:
 		return all_forms
 
 	def parse_form_recs (self, recs):
+		## Preconditions:
+		form_name = recs[0][consts.Column.form_name.value]
+		for r in recs:
+			assert r[consts.Column.form_name.value] == form_name, \
+				"form fields have different form names: '%s' and '%s'" % ( \
+					form_name, r[consts.Column.form_name.value])
+
+		## Main:
 		form_rec = {
 			'repeat': recs[0]['repeat']['form'],
 			'tags': recs[0]['tags']['form'],
 			'type': consts.SchemaItem.form.value,
-			'name': recs[0][consts.Column.form_name.value],
+			'name': form_name,
 			'contents': [],
 		}
-		num_recs = len (recs)
-		i = 0
 
-		# read initial no-section / no-subsection items
-		while (i < num_recs) and not (
-			recs[i][consts.Column.section_header.value] or
-			recs[i][consts.Column.subsection.value]
-		):
-			form_rec['contents'].append (self.parse_item_rec (recs[i]))
-			i += 1
+		curr_section = None
+		curr_items = []
 
-		if recs[i][consts.Column.section_header.value]:
-			# starting a section
-			while (i < num_recs):
-				# start a new section
-				start = i
-				i += 1
-				while (i < num_recs) and (not recs[i][consts.Column.section_header.value]):
-					i += 1
-				form_rec['contents'].append (self.parse_section_recs (recs[start:i]))
-		elif recs[i][consts.Column.subsection.value]:
-			# starting a subsection
-			pass
+		for r in recs:
+			new_section = r[consts.Column.section_header.value]
+
+			if curr_section:
+				# if currently in a section
+				if new_section:
+					# starting a new section
+					form_rec['contents'].append (self.parse_section_recs (curr_items))
+					curr_section = new_section
+					curr_items = [r]
+
+				else:
+					# just adding to current section
+					curr_items.append (r)
+
+			else:
+				# if in leading, standalone items (inc. start of form)
+
+				if new_section:
+					# starting a new section
+					curr_section = new_section
+					curr_items = [r]
+
+				else:
+					# still just standalone items
+					form_rec['contents'].append (self.parse_item_row (r))
+
+		if curr_section:
+			form_rec['contents'].append (self.parse_section_recs (curr_items))
 
 		## Return:
 		return form_rec
@@ -275,12 +307,12 @@ class ExpDataDictReader (object):
 		}
 
 		for r in recs:
-			section_rec['contents'].append (self.parse_row_rec (r))
+			section_rec['contents'].append (self.parse_item_row (r))
 
 		## Return:
 		return section_rec
 
-	def parse_row_rec (self, rec):
+	def parse_item_row (self, rec):
 		rec['type'] = 'row'
 		rec['repeat'] = rec['repeat']['row']
 		rec['tags'] = rec['tags']['row']
