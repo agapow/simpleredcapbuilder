@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-__version__ = '0.5'
+__version__ = '0.5.2'
 
 
 from . import consts

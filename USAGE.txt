@@ -232,6 +232,19 @@ Earlier versions of simpleredcapbuilder used the word 'item' to mean 'row' and
 'i_iter' instead of 'r_iter' in the template language. This was changed to avoid
 ambiguity.
 
+Had an odd error on template expansion where I got various things like::
+
+	jinja2.exceptions.TemplateSyntaxError: expected token 'end of
+		print statement', got 'RSV'
+
+This seems to be related to the use of strings in the templating, where doubel quotes get converted to a double-double quote. So this causes problems::
+
+	{{ "RSV, influenza, negative, unknown" | delim_str_to_vocab }}
+
+but this doesn't::
+
+	{{ 'RSV, influenza, negative, unknown' | delim_str_to_vocab }}
+
 Almost inevitably, after writing this I find that someone else had the same
 thought: https://github.com/chop-dbhi/redcap-repeat. It looks like a much
 simpler and user-friendly solution, albeit not as powerful but suitable for many

@@ -65,7 +65,7 @@ class Column (Enum):
 ALL_COLS = [x for x in Column]
 ALL_NAMES = [x.value for x in ALL_COLS]
 
-META_COLS = ALL_COLS[:3]
+META_COLS = ALL_COLS[:2]
 OUTPUT_COLS = ALL_COLS[3:]
 
 MANDATORY_COLS = (getattr (Column, x) for x in ['variable', 'form_name',
@@ -83,7 +83,7 @@ class SchemaItem (Enum):
 ALLOWED_FTYPE_VALS = [
 	'calc',
 	'checkbox',
-	'description',
+	'descriptive',
 	'dropdown',
 	'file',
 	'notes',

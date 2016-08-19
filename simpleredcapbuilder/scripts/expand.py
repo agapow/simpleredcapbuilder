@@ -25,7 +25,7 @@ from simpleredcapbuilder import consts
 from simpleredcapbuilder import PostValidator
 from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
 from simpleredcapbuilder import ext_from_path, ext_to_format, parse_ext_vars
-from simpleredcapbuilder.utils import pprint
+from simpleredcapbuilder.utils import pprint, progress
 
 ### CODE ###
 
@@ -61,6 +61,10 @@ def parse_clargs ():
 	aparser.add_argument ('-v', "--include-vars",
 		help='include external file of variables',
 		default=None,
+	)
+	aparser.add_argument('-d', '--dump-included-vars', action='store_true',
+		help='dump the included varaiables to the screen after reading',
+		default=False,
 	)
 
 	# allow / check for external cols
@@ -101,10 +105,13 @@ def parse_clargs ():
 	return args
 
 
-def parse_included_vars (inc_var_pth):
+def parse_included_vars (inc_var_pth, dump_included_vars):
 	ext = ext_from_path (inc_var_pth)
 	fmt = ext_to_format (ext)
 	data = open (inc_var_pth, 'rU').read()
+	if dump_included_vars:
+		progress ('Dumping included variables')
+		pprint (data)
 	return parse_ext_vars (data, fmt)
 
 
@@ -113,44 +120,45 @@ def main ():
 	args = parse_clargs()
 
 	# read in compact dd and parse out structure
-	print ("Parsing & validating input file ...")
+	progress ("Parsing & validating input file")
 	rdr = ExpDataDictReader()
 	exp_dd_struct = rdr.parse (args.infile, extra_cols=args.extra_cols)
 
-	# read in compact dd and parse out structure
+	# read xternal file of included variables
 	if args.include_vars:
-		print ("Parsing file of included variables ...")
-		inc_vars = parse_included_vars (args.include_vars)
+		progress ("Parsing file of included variables")
+		inc_vars = parse_included_vars (args.include_vars,
+			args.dump_included_vars)
 	else:
 		inc_vars = {}
 
 	# dump structure as json
-	print ("Dumping structure as JSON ...")
+	progress ("Dumping structure as JSON")
 	import json
 	json_pth = args.fileroot + '.json'
 	with open (json_pth, 'w') as out_hndl:
-	    json.dump (exp_dd_struct, out_hndl, indent=3)
+		json.dump (exp_dd_struct, out_hndl, indent=3)
 
 	# expand structure to templ
-	print ("Expanding structure to template ...")
+	progress ("Expanding structure to template")
 	tmpl_pth = args.fileroot + '.jinja'
 	xpndr = ExpandDbSchema()
 	xpndr.expand (exp_dd_struct, inc_tags=args.include_tags,
 		exc_tags=args.exclude_tags, out_pth=tmpl_pth)
 
 	# now render the template
-	print ("Rendering template ...")
+	progress ("Rendering template")
 	with open (tmpl_pth, 'rU') as in_hndl:
 		tmpl_data = in_hndl.read()
 	# XXX: need a better way to handle this
 	inc_vars['tags'] = args.include_tags or args.exclude_tags
 	exp_tmpl = render_template (tmpl_data, inc_vars)
-	print ("Saving template as data dictionary ...")
+	progress ("Saving template as data dictionary")
 	with open (args.outfile, 'w') as out_hndl:
 		out_hndl.write (exp_tmpl)
 
 	# do the postvalidation
-	print ("Post-validating output data dictionary ...")
+	progress ("Post-validating output data dictionary")
 	with open (args.outfile, 'rU') as in_hndl:
 		rdr = csv.DictReader (in_hndl)
 		recs = [r for r in rdr]

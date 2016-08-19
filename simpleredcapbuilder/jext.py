@@ -107,7 +107,7 @@ def str_list_to_choices (str_list, del_bracketed=True, cap_label=True):
 
 			# make value by lowercasing, stripping bracketed, converting conseq
 			# spaces to underscores
-			val_str = vc_label.lower()
+			val_str = lbl_str.lower()
 			if del_bracketed:
 				val_str = BRACKETED_PATT.sub ('', val_str).strip()
 			val_str = SPACE_PATT.sub ('_', val_str)

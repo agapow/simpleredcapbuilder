@@ -28,6 +28,21 @@ __all__ = [
 
 BL_STR_VAR_REGEX = re.compile (r'\[([^\]\(]+)')
 
+# character pairs to check for templating errors
+CHAR_PAIRS = (
+	('{', '}'),
+	('(', ')'),
+	('[', ']'),
+	('{{', '}}'),
+	('{%', '%}'),
+	('{#', '#}'),
+)
+
+CHAR_DBLS = ('\'', '"')
+
+TMPL_CHECK_COLS = [c for c in consts.ALL_NAMES if c not in ['tags', 'repeat']]
+
+
 
 ### CODE ###
 
@@ -142,6 +157,7 @@ class PreValidator (object):
 	def __init__ (self):
 		pass
 
+
 	def check (self, recs):
 		for r in recs:
 			self.check_rec (r)
@@ -160,6 +176,8 @@ class PreValidator (object):
 		self.check_id_length (rec)
 		check_dates_and_times (rec)
 		check_needs_choices (rec, check_comp=False)
+		self.check_template_errors (rec)
+
 
 	def check_id_length (self, rec):
 		variable = rec[COL.variable.value]
@@ -222,6 +240,27 @@ class PreValidator (object):
 					pass
 
 
+	def check_template_errors (self, rec):
+		"""
+		Ad hoc check to see that template language code looks right.
+
+		Also captures imbalanced braces and brackets.
+		"""
+		for c in TMPL_CHECK_COLS:
+			v = rec[c]
+			if v:
+				for c_pr in CHAR_PAIRS:
+					cnts = [v.count (x) for x in c_pr]
+					if cnts[0] != cnts[1]:
+						msg = "column '%s' may be malformed (see '%s')" % (
+							c, c_pr[0])
+						warn_rec (rec, msg)
+				for ch in CHAR_DBLS:
+					if v.count (ch) % 2:
+						msg = "column '%s' may have unclosed quotes" % c
+						warn_rec (rec, msg)
+
+
 class PostValidator (object):
 	# TODO: am I checking for unique ids twice?
 	def __init__ (self):
@@ -256,6 +295,26 @@ class PostValidator (object):
 		else:
 			self.form_names.append (form_name)
 
+	def check_choices_len (self, rec):
+		"""
+		For multichoice, checks that combined identifiers lengths is valid.
+
+		"""
+		# XXX: do we need a try-except here?
+		if rec[Col.field_type.value] == 'checkbox':
+			id_str = len (rec[Col.field_type.identifier])
+			# parse choices string
+			choices_str = rec[Col.choices_calculations.value]
+			choice_pairs = choices_str.split ('|')
+			choice_values = [s.split(',', 1)[0].strip() for s in choice_pairs]
+
+			# check length
+			for cv in choice_values:
+				cv_str = "%s__%s" % (id_str, cv)
+				if 26 < len (cv_str):
+					msg = "checkbox choice '%s' is too long" % cv_str
+					error_rec (rec, msg)
+
 	def check_rec (self, rec):
 		check_required_fields (rec)
 		check_id_length (rec)
@@ -274,6 +333,7 @@ class PostValidator (object):
 
 		check_needs_choices (rec, check_comp=False)
 		check_choices (rec)
+		self.check_choices_len (rec)
 
 		# check bl vars are proper
 		var_name = rec[COL.variable.value]
@@ -289,8 +349,6 @@ class PostValidator (object):
 			curr_var = m.groups()[0]
 			if curr_var not in self.field_ids:
 				warn_rec (rec, "unrecognised variable '%s' in branching logic" % curr_var)
-
-
 
 
 

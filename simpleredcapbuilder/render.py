@@ -130,17 +130,19 @@ class AlertUndefined (Undefined):
 
 
 def render_template (tmpl_str, render_vals={}):
+	# XXX" ih, why is there a try / except here?
 	env = Environment (undefined=AlertUndefined)
-	env.globals.update (jext.EXT_DICT)
 	env.filters.update (jext.FILTER_DICT)
 	template = env.from_string (tmpl_str)
+	render_vals.update (jext.EXT_DICT)
 
 	try:
-		rendered_tmpl = template.render()
+		rendered_tmpl = template.render (**render_vals)
 		return rendered_tmpl
 	except jexcept.UndefinedError as err:
 		print ('variable used in schema is undefined')
 		raise
+
 
 
 
