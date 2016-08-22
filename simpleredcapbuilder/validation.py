@@ -301,10 +301,10 @@ class PostValidator (object):
 
 		"""
 		# XXX: do we need a try-except here?
-		if rec[Col.field_type.value] == 'checkbox':
-			id_str = len (rec[Col.field_type.identifier])
+		if rec[COL.field_type.value] == 'checkbox':
+			id_str = len (rec[COL.field_type.identifier.value])
 			# parse choices string
-			choices_str = rec[Col.choices_calculations.value]
+			choices_str = rec[COL.choices_calculations.value]
 			choice_pairs = choices_str.split ('|')
 			choice_values = [s.split(',', 1)[0].strip() for s in choice_pairs]
 

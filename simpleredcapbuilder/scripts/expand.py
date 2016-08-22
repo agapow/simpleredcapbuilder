@@ -109,10 +109,11 @@ def parse_included_vars (inc_var_pth, dump_included_vars):
 	ext = ext_from_path (inc_var_pth)
 	fmt = ext_to_format (ext)
 	data = open (inc_var_pth, 'rU').read()
+	parsed_data = parse_ext_vars (data, fmt)
 	if dump_included_vars:
 		progress ('Dumping included variables')
-		pprint (data)
-	return parse_ext_vars (data, fmt)
+		pprint (parsed_data)
+	return parsed_data
 
 
 
