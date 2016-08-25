@@ -47,6 +47,7 @@ class ExpandDbSchema (object):
 			self.csv_writer = csv.DictWriter (out_hndl,
 				fieldnames=[x.value for x in consts.OUTPUT_COLS],
 				extrasaction='ignore',
+				quoting=csv.QUOTE_ALL,
 			)
 			self.csv_writer.writeheader()
 

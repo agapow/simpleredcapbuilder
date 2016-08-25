@@ -138,7 +138,7 @@ def main ():
 	import json
 	json_pth = args.fileroot + '.json'
 	with open (json_pth, 'w') as out_hndl:
-		json.dump (exp_dd_struct, out_hndl, indent=3)
+		json.dump (exp_dd_struct, out_hndl, indent=3, ensure_ascii=False)
 
 	# expand structure to templ
 	progress ("Expanding structure to template")

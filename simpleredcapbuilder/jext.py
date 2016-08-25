@@ -6,6 +6,8 @@ Jinja extensions.
 
 import re
 
+import jinja2
+
 
 ### CONSTANTS & DEFINES
 
@@ -121,12 +123,10 @@ def str_list_to_choices (str_list, del_bracketed=True, cap_label=True):
 
 	# make vocab str
 	vocab_list = ['%s, %s' % (c[0], c[1]) for c in choice_prs]
-	vocab_str = ' | '.join (vocab_list)
-	quoted_vocab_str = '"%s"' % vocab_str
+	vocab_str = jinja2.Markup (' | '.join (vocab_list))
 
 	## Return:
-	print (quoted_vocab_str)
-	return quoted_vocab_str
+	return vocab_str
 
 FILTER_DICT['str_list_to_choices'] = str_list_to_choices
 
